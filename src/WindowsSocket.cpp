@@ -1,4 +1,6 @@
 #include "cpplibsocket/WindowsSocket.h"
+
+#include <limits>
 #include <mutex>
 #include <set>
 
@@ -53,23 +55,31 @@ void cleanUpWinsock() {
 namespace Platform {
 
     DataSize send(SocketHandle socket, const Byte* data, const DataSize size) {
-        return static_cast<DataSize>(::send(socket, reinterpret_cast<const char*>(data), size, 0));
+        const int viableSize =
+            static_cast<int>(std::min(static_cast<DataSize>(std::numeric_limits<int>::max()), size));
+        return static_cast<DataSize>(::send(socket, reinterpret_cast<const char*>(data), viableSize, 0));
     }
 
     DataSize sendTo(SocketHandle socket, const Byte* data, const DataSize size, const sockaddr* addr) {
+        const int viableSize =
+            static_cast<int>(std::min(static_cast<DataSize>(std::numeric_limits<int>::max()), size));
         const SockLenType sockSize = getAddrSize(toIPVer(addr->sa_family));
         return static_cast<DataSize>(
-            ::sendto(socket, reinterpret_cast<const char*>(data), size, 0, addr, sockSize));
+            ::sendto(socket, reinterpret_cast<const char*>(data), viableSize, 0, addr, sockSize));
     }
 
-    DataSize receive(SocketHandle socket, Byte* data, const DataSize size) {
-        return static_cast<DataSize>(::recv(socket, reinterpret_cast<char*>(data), size, 0));
+    DataSize receive(SocketHandle socket, Byte* data, const DataSize maxSize) {
+        const int viableSize =
+            static_cast<int>(std::min(static_cast<DataSize>(std::numeric_limits<int>::max()), maxSize));
+        return static_cast<DataSize>(::recv(socket, reinterpret_cast<char*>(data), viableSize, 0));
     }
 
-    DataSize receiveFrom(SocketHandle socket, Byte* data, const DataSize size, sockaddr* addr) {
+    DataSize receiveFrom(SocketHandle socket, Byte* data, const DataSize maxSize, sockaddr* addr) {
+        const int viableSize =
+            static_cast<int>(std::min(static_cast<DataSize>(std::numeric_limits<int>::max()), maxSize));
         SockLenType dummy;
         return static_cast<DataSize>(
-            ::recvfrom(socket, reinterpret_cast<char*>(data), size, 0, addr, &dummy));
+            ::recvfrom(socket, reinterpret_cast<char*>(data), viableSize, 0, addr, &dummy));
     }
 
     bool setBlocked(SocketHandle socket, const bool blocked) {
