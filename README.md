@@ -1,4 +1,4 @@
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/proxict/cpplibsocket?svg=true)](https://ci.appveyor.com/api/projects/status/github/proxict/cpplibsocket?svg=true)
+[![Build status](https://ci.appveyor.com/api/projects/status/vdj6nxatb8pp0xav?svg=true)](https://ci.appveyor.com/project/proxict/cpplibsocket)
 
 What is cpplibsocket?
 ---------------------
