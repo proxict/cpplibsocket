@@ -8,6 +8,8 @@
 #include <cstring>
 
 #ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <WS2tcpip.h>
 #include <winsock2.h>
 #else

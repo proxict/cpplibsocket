@@ -1,5 +1,6 @@
 #include "cpplibsocket/WindowsSocket.h"
 
+#include <algorithm>
 #include <limits>
 #include <mutex>
 #include <set>
