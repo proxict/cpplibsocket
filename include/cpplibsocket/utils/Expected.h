@@ -24,8 +24,25 @@ namespace Detail {
     struct ExpectedError<const wchar_t (&)[TSize]> {
         using Type = std::wstring;
     };
-}
+} // namespace Detail
 
+/// Utility meant primarily for return types where an error could be returned instead of the value
+///
+/// Usage example:
+/// Expected<Socket> openSocket() {
+///     const int sockFd = ::opensocket(...);
+///     if (sockFd == -1) {
+///         return makeUnexpected<Socket>("Failed to create a socket");
+///     }
+///     return Socket(sockFd);
+/// }
+///
+/// Expected<Socket> socket = openSocket();
+/// if (!socket) {
+///     std::cout << socket.error();
+/// } else {
+///     socket->listen();
+/// }
 template <typename T, typename TError = std::string>
 class Expected {
 public:
@@ -83,65 +100,61 @@ public:
     }
 
     ~Expected() {
-		if (mInitialized) {
-			mValue.~ValueType();
-		} else {
-			mError.~TError();
-		}
-	}
+        if (mInitialized) {
+            mValue.~ValueType();
+        } else {
+            mError.~TError();
+        }
+    }
 
     ValueType& value() {
-		ASSERT(mInitialized);
-		return mValue;
-	}
+        ASSERT(mInitialized);
+        return mValue;
+    }
 
     const ValueType& value() const {
-		ASSERT(mInitialized);
-		return mValue;
-	}
+        ASSERT(mInitialized);
+        return mValue;
+    }
 
     ValueType* operator->() noexcept {
-		ASSERT(mInitialized);
-		return &mValue;
-	}
+        ASSERT(mInitialized);
+        return &mValue;
+    }
 
     const ValueType* operator->() const noexcept {
-		ASSERT(mInitialized);
-		return &mValue;
-	}
+        ASSERT(mInitialized);
+        return &mValue;
+    }
 
     ValueType& operator*() noexcept {
-		ASSERT(mInitialized);
-		return mValue;
-	}
+        ASSERT(mInitialized);
+        return mValue;
+    }
 
     const ValueType& operator*() const noexcept {
-		ASSERT(mInitialized);
-		return mValue;
-	}
+        ASSERT(mInitialized);
+        return mValue;
+    }
 
     const ValueType* operator&() const noexcept {
-		ASSERT(mInitialized);
-		return &mValue;
-	}
+        ASSERT(mInitialized);
+        return &mValue;
+    }
 
     ValueType* operator&() noexcept {
-		ASSERT(mInitialized);
-		return &mValue;
-	}
+        ASSERT(mInitialized);
+        return &mValue;
+    }
 
     const TError& error() const noexcept {
-		ASSERT(!mInitialized);
-		return mError;
-	}
+        ASSERT(!mInitialized);
+        return mError;
+    }
 
-    explicit operator bool() const noexcept {
-		return mInitialized;
-	}
+    explicit operator bool() const noexcept { return mInitialized; }
 
-    bool operator!() const noexcept {
-		return !mInitialized;
-	}
+    bool operator!() const noexcept { return !mInitialized; }
 
 private:
     union {
@@ -153,21 +166,22 @@ private:
 
     struct Error {};
 
-	template <typename TOtherError>
-	Expected(const Error&, TOtherError&& error) {
-		new (&mError) TError(std::forward<TOtherError>(error));
-	}
+    template <typename TOtherError>
+    Expected(const Error&, TOtherError&& error) {
+        new (&mError) TError(std::forward<TOtherError>(error));
+    }
 
-	template <typename TValueOther, typename TErrorOther>
+    template <typename TValueOther, typename TErrorOther>
     friend class Expected;
 
     template <typename TOther, typename TOtherError>
-    friend Expected<TOther, typename Detail::ExpectedError<TOtherError>::Type> makeUnexpected(TOtherError&& error);
+    friend Expected<TOther, typename Detail::ExpectedError<TOtherError>::Type>
+    makeUnexpected(TOtherError&& error);
 };
 
 template <typename T, typename TError>
 Expected<T, typename Detail::ExpectedError<TError>::Type> makeUnexpected(TError&& error) {
-	using ErrorType = typename Detail::ExpectedError<TError>::Type;
+    using ErrorType = typename Detail::ExpectedError<TError>::Type;
     using ExpectedType = Expected<T, ErrorType>;
     return ExpectedType(typename ExpectedType::Error(), std::forward<ErrorType>(error));
 }

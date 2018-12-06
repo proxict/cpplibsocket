@@ -5,10 +5,10 @@ namespace cpplibsocket {
 Socket<IPProto::TCP>::Socket(const IPVer ipVersion)
     : SocketBase(IPProto::TCP, ipVersion) {}
 
-Socket<IPProto::TCP>::Socket(const IPVer ipVersion, const SocketHandle clientFileDescriptor)
-    : SocketBase(IPProto::TCP, ipVersion, clientFileDescriptor) {}
-
 void Socket<IPProto::TCP>::connect(const std::string& hostIp, const Port hostPort) {
+    if (!isOpen()) {
+        throw Exception(FUNC_NAME, "The socket is not open");
+    }
     const sockaddr addr = createAddr(hostIp, hostPort);
     if (::connect(mSocketHandle, &addr, getAddrSize(mIpVersion)) == -1) {
         throw Exception(
@@ -17,12 +17,18 @@ void Socket<IPProto::TCP>::connect(const std::string& hostIp, const Port hostPor
 }
 
 void Socket<IPProto::TCP>::listen(const int backLogSize) {
+    if (!isOpen()) {
+        throw Exception(FUNC_NAME, "The socket is not open");
+    }
     if (::listen(mSocketHandle, backLogSize) == -1) {
         throw Exception(FUNC_NAME, "Couldn't open socket for listening - ", getLastErrorFormatted());
     }
 }
 
 Expected<Socket<IPProto::TCP>> Socket<IPProto::TCP>::accept() const {
+    if (!isOpen()) {
+        throw Exception(FUNC_NAME, "The socket is not open");
+    }
     sockaddr sourceAddr = {};
     SockLenType addrLen = sizeof(sockaddr);
     const SocketHandle clientFileDescriptor = ::accept(mSocketHandle, &sourceAddr, &addrLen);
@@ -63,5 +69,8 @@ Expected<ReceivedSize> Socket<IPProto::TCP>::receive(Byte* data, const DataSize 
     }
     return received;
 }
+
+Socket<IPProto::TCP>::Socket(const IPVer ipVersion, const SocketHandle clientFileDescriptor)
+    : SocketBase(IPProto::TCP, ipVersion, clientFileDescriptor) {}
 
 } // namespace cpplibsocket

@@ -23,7 +23,7 @@ SocketBase::SocketBase(SocketBase&& other) {
     *this = std::move(other);
 }
 
-bool SocketBase::isOpen() const {
+bool SocketBase::isOpen() const noexcept {
     return mSocketHandle != Platform::SOCKET_NULL;
 }
 
@@ -49,6 +49,9 @@ void SocketBase::close() {
 }
 
 void SocketBase::bind(const std::string& ip, const Port port) {
+    if (!isOpen()) {
+        throw Exception(FUNC_NAME, "Socket is not open");
+    }
     sockaddr addr = createAddr(ip, port);
     if (::bind(mSocketHandle, &addr, getAddrSize(mIpVersion)) != 0) {
         throw Exception(
@@ -74,7 +77,7 @@ SocketBase::SocketBase(const IPProto ipProtocol, const IPVer ipVersion)
 
 SocketBase::SocketBase(const IPProto ipProtocol,
                        const IPVer ipVersion,
-                       const SocketHandle clientFileDescriptor)
+                       const SocketHandle clientFileDescriptor) noexcept
     : mSocketHandle(clientFileDescriptor)
     , mIpProtocol(ipProtocol)
     , mIpVersion(ipVersion) {}
