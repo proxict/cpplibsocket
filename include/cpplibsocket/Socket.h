@@ -57,9 +57,12 @@ protected:
     SocketBase(const IPProto ipProtocol, const IPVer ipVersion);
 
     /// Creates a socket from an already open socket handle
+    /// \param ipProtocol The protocol of the client socket.
+    /// \param ipVersion The version of the client socket.
+    /// \param clientSocketHandle The handle of the client socket.
     SocketBase(const IPProto ipProtocol,
                const IPVer ipVersion,
-               const SocketHandle clientFileDescriptor) noexcept;
+               const SocketHandle clientSocketHandle) noexcept;
 
     /// Creates a sockaddr structure from given IP address and port
     /// \throws Exception in case there was some error while creating the structure.
@@ -122,8 +125,7 @@ public:
     Expected<ReceivedSize> receive(Byte* data, const DataSize maxSize) const;
 
 private:
-    /// Constructs a socket with an already open handle
-    Socket(const IPVer ipVersion, const SocketHandle clientFileDescriptor);
+    Socket(const IPVer ipVersion, const SocketHandle clientSocketHandle) noexcept;
 };
 
 /// RAII UDP Socket wrapper

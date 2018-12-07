@@ -70,7 +70,7 @@ Expected<ReceivedSize> Socket<IPProto::TCP>::receive(Byte* data, const DataSize 
     return received;
 }
 
-Socket<IPProto::TCP>::Socket(const IPVer ipVersion, const SocketHandle clientFileDescriptor)
-    : SocketBase(IPProto::TCP, ipVersion, clientFileDescriptor) {}
+Socket<IPProto::TCP>::Socket(const IPVer ipVersion, const SocketHandle clientSocketHandle) noexcept
+    : SocketBase(IPProto::TCP, ipVersion, clientSocketHandle) {}
 
 } // namespace cpplibsocket

@@ -8,6 +8,8 @@
 
 namespace cpplibsocket {
 
+/// Returns a string representation of the last error that occurred in either system calls or in some library
+/// functions.
 std::string getLastErrorFormatted();
 
 namespace Platform {
@@ -29,7 +31,6 @@ namespace Platform {
     static constexpr SocketHandle SOCKET_NULL = -1;
 
 } // namespace Platform
-
 
 } // namespace cpplibsocket
 
