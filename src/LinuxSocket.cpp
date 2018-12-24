@@ -10,30 +10,30 @@ std::string getLastErrorFormatted() {
 
 namespace Platform {
 
-    DataSize send(SocketHandle socket, const Byte* data, const DataSize size) {
+    SignedSize send(SocketHandle socket, const Byte* data, const UnsignedSize size) {
         const size_t viableSize =
-            static_cast<size_t>(std::min(static_cast<DataSize>(std::numeric_limits<size_t>::max()), size));
-        return static_cast<DataSize>(::send(socket, data, viableSize, 0));
+            static_cast<size_t>(std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), size));
+        return static_cast<SignedSize>(::send(socket, data, viableSize, 0));
     }
 
-    DataSize sendTo(SocketHandle socket, const Byte* data, const DataSize size, const sockaddr* addr) {
+    SignedSize sendTo(SocketHandle socket, const Byte* data, const UnsignedSize size, const sockaddr* addr) {
         const size_t viableSize =
-            static_cast<size_t>(std::min(static_cast<DataSize>(std::numeric_limits<size_t>::max()), size));
+            static_cast<size_t>(std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), size));
         const SockLenType sockSize = getAddrSize(toIPVer(addr->sa_family));
-        return static_cast<DataSize>(::sendto(socket, data, viableSize, 0, addr, sockSize));
+        return static_cast<SignedSize>(::sendto(socket, data, viableSize, 0, addr, sockSize));
     }
 
-    DataSize receive(SocketHandle socket, Byte* data, const DataSize maxSize) {
+    SignedSize receive(SocketHandle socket, Byte* data, const UnsignedSize maxSize) {
         const size_t viableSize =
-            static_cast<size_t>(std::min(static_cast<DataSize>(std::numeric_limits<size_t>::max()), maxSize));
-        return static_cast<DataSize>(::recv(socket, data, viableSize, 0));
+            static_cast<size_t>(std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), maxSize));
+        return static_cast<SignedSize>(::recv(socket, data, viableSize, 0));
     }
 
-    DataSize receiveFrom(SocketHandle socket, Byte* data, const DataSize maxSize, sockaddr* addr) {
+    SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize maxSize, sockaddr* addr) {
         const size_t viableSize =
-            static_cast<size_t>(std::min(static_cast<DataSize>(std::numeric_limits<size_t>::max()), maxSize));
+            static_cast<size_t>(std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), maxSize));
         SockLenType dummy;
-        return static_cast<DataSize>(::recvfrom(socket, data, viableSize, 0, addr, &dummy));
+        return static_cast<SignedSize>(::recvfrom(socket, data, viableSize, 0, addr, &dummy));
     }
 
     bool setBlocked(SocketHandle socket, const bool blocked) {

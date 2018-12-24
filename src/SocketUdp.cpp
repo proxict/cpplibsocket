@@ -5,26 +5,27 @@ namespace cpplibsocket {
 Socket<IPProto::UDP>::Socket(const IPVer ipVersion)
     : SocketBase(IPProto::UDP, ipVersion) {}
 
-Expected<SentSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
-                                                const DataSize size,
+Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
+                                                const UnsignedSize size,
                                                 const std::string& hostIp,
                                                 const Port hostPort) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't send data");
     }
     const sockaddr addr = createAddr(hostIp, hostPort);
-    const SentSize sent = Platform::sendTo(mSocketHandle, data, size, &addr);
+    const SignedSize sent = Platform::sendTo(mSocketHandle, data, size, &addr);
     if (sent == -1) {
         if (errno == EWOULDBLOCK) {
             return makeUnexpected<Size>("Socket would block");
         }
         throw Exception(FUNC_NAME, "Couldn't send data - ", getLastErrorFormatted());
     }
-    return sent;
+    ASSERT(sent >= 0);
+    return static_cast<UnsignedSize>(sent);
 }
 
-Expected<ReceivedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
-                                                         const DataSize maxSize,
+Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
+                                                         const UnsignedSize maxSize,
                                                          IPVer& sourceIpVersion,
                                                          std::string& sourceIp,
                                                          Port& sourcePort) {
@@ -32,7 +33,7 @@ Expected<ReceivedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
         throw Exception(FUNC_NAME, "Couldn't receive data");
     }
     sockaddr addr;
-    const ReceivedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, &addr);
+    const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, &addr);
     if (received == -1) {
         if (errno == EWOULDBLOCK) {
             return makeUnexpected<Size>("Socket would block");
@@ -59,7 +60,8 @@ Expected<ReceivedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
     default:
         throw Exception(FUNC_NAME, "Unknown IP version from client");
     }
-    return received;
+    ASSERT(received >= 0);
+    return static_cast<UnsignedSize>(received);
 }
 
 } // namespace cpplibsocket

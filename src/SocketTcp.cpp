@@ -42,32 +42,34 @@ Expected<Socket<IPProto::TCP>> Socket<IPProto::TCP>::accept() const {
                                 clientFileDescriptor);
 }
 
-Expected<SentSize> Socket<IPProto::TCP>::send(const Byte* data, const DataSize size) const {
+Expected<UnsignedSize> Socket<IPProto::TCP>::send(const Byte* data, const UnsignedSize size) const {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Socket is not open");
     }
-    const SentSize sent = Platform::send(mSocketHandle, data, size);
+    const SignedSize sent = Platform::send(mSocketHandle, data, size);
     if (sent == -1) {
         if (errno == EWOULDBLOCK) {
             return makeUnexpected<Size>("Socket would block");
         }
         throw Exception(FUNC_NAME, "Couldn't send data - ", getLastErrorFormatted());
     }
-    return sent;
+    ASSERT(sent >= 0);
+    return static_cast<UnsignedSize>(sent);
 }
 
-Expected<ReceivedSize> Socket<IPProto::TCP>::receive(Byte* data, const DataSize maxSize) const {
+Expected<UnsignedSize> Socket<IPProto::TCP>::receive(Byte* data, const UnsignedSize maxSize) const {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't receive data");
     }
-    const ReceivedSize received = Platform::receive(mSocketHandle, data, maxSize);
+    const SignedSize received = Platform::receive(mSocketHandle, data, maxSize);
     if (received == -1) {
         if (errno == EWOULDBLOCK) {
             return makeUnexpected<Size>("Socket would block");
         }
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
     }
-    return received;
+    ASSERT(received >= 0);
+    return static_cast<UnsignedSize>(received);
 }
 
 Socket<IPProto::TCP>::Socket(const IPVer ipVersion, const SocketHandle clientSocketHandle) noexcept

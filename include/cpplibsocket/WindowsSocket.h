@@ -14,13 +14,13 @@ void deinitializeWinsock();
 
 namespace Platform {
 
-    DataSize send(SocketHandle socket, const Byte* data, const DataSize size);
+    SignedSize send(SocketHandle socket, const Byte* data, const UnsignedSize size);
 
-    DataSize sendTo(SocketHandle socket, const Byte* data, const DataSize size, const sockaddr* addr);
+    SignedSize sendTo(SocketHandle socket, const Byte* data, const UnsignedSize size, const sockaddr* addr);
 
-    DataSize receive(SocketHandle socket, Byte* data, const DataSize size);
+    SignedSize receive(SocketHandle socket, Byte* data, const UnsignedSize size);
 
-    DataSize receiveFrom(SocketHandle socket, Byte* data, const DataSize size, sockaddr* addr);
+    SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize size, sockaddr* addr);
 
     bool setBlocked(SocketHandle socket, const bool blocked = true);
 

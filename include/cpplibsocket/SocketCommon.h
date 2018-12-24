@@ -6,6 +6,7 @@
 #include "cpplibsocket/common/Assert.h"
 
 #include <cstring>
+#include <type_traits>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -27,9 +28,8 @@ using SockLenType = socklen_t;
 using SocketHandle = int;
 #endif
 
-using DataSize = unsigned long;
-using ReceivedSize = long long;
-using SentSize = long long;
+using UnsignedSize = std::size_t;
+using SignedSize = typename std::make_signed<UnsignedSize>::type;
 
 enum class IPProto : int { TCP, UDP };
 
