@@ -42,9 +42,10 @@ public:
     /// It is normally necessary to assign a local address to the socket before a TCP socket may receive
     /// connections (\see accept()).
     /// \param ip The IP address to assign.
-    /// \param port The port to assign.
+    /// \param port The port to assign. If the port is 0, any free local port will be used.
+    /// \returns Port which was bound to the socket
     /// \throws Exception in case the socket is not open or if the binding fails
-    void bind(const std::string& ip, const Port port);
+    Port bind(const std::string& ip, const Port port = 0);
 
     /// Sets blocking or non-blocking property of the socket
     /// \param blocked If true, the socket will be set as blocking, if false, the socket will be non-blocking.

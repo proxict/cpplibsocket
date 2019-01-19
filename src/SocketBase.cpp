@@ -48,7 +48,7 @@ void SocketBase::close() {
     mSocketHandle = Platform::SOCKET_NULL;
 }
 
-void SocketBase::bind(const std::string& ip, const Port port) {
+Port SocketBase::bind(const std::string& ip, const Port port) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Socket is not open");
     }
@@ -57,6 +57,13 @@ void SocketBase::bind(const std::string& ip, const Port port) {
         throw Exception(
             FUNC_NAME, "Couldn't bind address \"", ip, ":", port, "\" - ", getLastErrorFormatted());
     }
+
+    sockaddr_in sin;
+    SockLenType len = sizeof(sin);
+    if (::getsockname(mSocketHandle, reinterpret_cast<sockaddr*>(&sin), &len) != 0) {
+        throw Exception(FUNC_NAME, "Couldn't get the bound port - ", getLastErrorFormatted());
+    }
+    return ntohs(sin.sin_port);
 }
 
 void SocketBase::setBlocked(const bool blocked) {
