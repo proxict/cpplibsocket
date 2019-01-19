@@ -32,7 +32,7 @@ namespace Platform {
     SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize maxSize, sockaddr* addr) {
         const size_t viableSize =
             static_cast<size_t>(std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), maxSize));
-        SockLenType dummy;
+        SockLenType dummy = sizeof(sockaddr);
         return static_cast<SignedSize>(::recvfrom(socket, data, viableSize, 0, addr, &dummy));
     }
 
