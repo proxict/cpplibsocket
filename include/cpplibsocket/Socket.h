@@ -52,6 +52,8 @@ public:
     /// \throws Exception in case the socket is not open or if setting the property fails.
     void setBlocked(const bool blocked = true);
 
+    static Port getFreePort();
+
 protected:
     /// Creates a new socket with the given protocol and IP version
     /// \throws Exception in case there were some problems while opening the socket.

@@ -2,6 +2,15 @@
 
 namespace cpplibsocket {
 
+static Port getBoundPort(SocketHandle socket) {
+    sockaddr_in sin;
+    SockLenType len = sizeof(sin);
+    if (::getsockname(socket, reinterpret_cast<sockaddr*>(&sin), &len) != 0) {
+        throw Exception(FUNC_NAME, "Couldn't get the bound port - ", getLastErrorFormatted());
+    }
+    return ntohs(sin.sin_port);
+}
+
 SocketBase::~SocketBase() {
     try {
         if (isOpen()) {
@@ -57,13 +66,7 @@ Port SocketBase::bind(const std::string& ip, const Port port) {
         throw Exception(
             FUNC_NAME, "Couldn't bind address \"", ip, ":", port, "\" - ", getLastErrorFormatted());
     }
-
-    sockaddr_in sin;
-    SockLenType len = sizeof(sin);
-    if (::getsockname(mSocketHandle, reinterpret_cast<sockaddr*>(&sin), &len) != 0) {
-        throw Exception(FUNC_NAME, "Couldn't get the bound port - ", getLastErrorFormatted());
-    }
-    return ntohs(sin.sin_port);
+    return getBoundPort(mSocketHandle);
 }
 
 void SocketBase::setBlocked(const bool blocked) {
@@ -74,6 +77,26 @@ void SocketBase::setBlocked(const bool blocked) {
         throw Exception(
             FUNC_NAME, "Couldn't set blocking/non-blocking socket property - ", getLastErrorFormatted());
     }
+}
+
+Port SocketBase::getFreePort() {
+    SocketHandle s = ::socket(AF_INET, SOCK_DGRAM, 0);
+    if (s == Platform::SOCKET_NULL) {
+        throw Exception(FUNC_NAME, "Couldn't open socket - ", getLastErrorFormatted());
+    }
+
+    sockaddr_in addr;
+    addr.sin_port = 0;
+    addr.sin_addr.s_addr = 0;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_family = AF_INET;
+
+    if (::bind(s, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in)) != 0) {
+        throw Exception(
+            FUNC_NAME, "Couldn't bind any port", getLastErrorFormatted());
+    }
+
+    return getBoundPort(s);
 }
 
 SocketBase::SocketBase(const IPProto ipProtocol, const IPVer ipVersion)
