@@ -157,6 +157,19 @@ public:
     /// otherwise.
     /// \throws Exception in case the socket is not open or if there was some error while receiving
     /// the data.
+    Expected<UnsignedSize> receiveFrom(Byte* data, const UnsignedSize maxSize);
+
+    /// Receives data from the given IP address and port
+    /// \param data The destination for the received data.
+    /// \param The maximum size of data we can receive at this time.
+    /// \param sourceIpVersion After the function call, the version of IP address of the sender will be saved
+    /// in this argument.
+    /// \param sourceIpVersion After the function call, the IP address of the sender will be saved in this
+    /// argument.
+    /// \param sourceIpPort After the function call, the port of the sender will be saved in this argument.
+    /// \returns If no error occurred, the size of the data received is returned. An error is returned
+    /// otherwise.
+    /// \throws Exception in case the socket is not open or if there was some error while receiving the data.
     Expected<UnsignedSize> receiveFrom(Byte* data,
                                        const UnsignedSize maxSize,
                                        IPVer& sourceIpVersion,

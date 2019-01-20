@@ -6,9 +6,9 @@ Socket<IPProto::UDP>::Socket(const IPVer ipVersion)
     : SocketBase(IPProto::UDP, ipVersion) {}
 
 Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
-                                                const UnsignedSize size,
-                                                const std::string& hostIp,
-                                                const Port hostPort) {
+                                                    const UnsignedSize size,
+                                                    const std::string& hostIp,
+                                                    const Port hostPort) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't send data");
     }
@@ -22,6 +22,22 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
     }
     ASSERT(sent >= 0);
     return static_cast<UnsignedSize>(sent);
+}
+
+Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data, const UnsignedSize maxSize) {
+    if (!isOpen()) {
+        throw Exception(FUNC_NAME, "Couldn't receive data");
+    }
+    sockaddr addr;
+    const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, &addr);
+    if (received == -1) {
+        if (errno == EWOULDBLOCK) {
+            return makeUnexpected<Size>("Socket would block");
+        }
+        throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
+    }
+    ASSERT(received >= 0);
+    return static_cast<UnsignedSize>(received);
 }
 
 Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
