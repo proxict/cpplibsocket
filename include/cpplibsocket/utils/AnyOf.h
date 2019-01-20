@@ -1,8 +1,8 @@
 #ifndef CPPLIBSOCKET_UTILS_ANYOF_H_
 #define CPPLIBSOCKET_UTILS_ANYOF_H_
 
-#include <array>
 #include <algorithm>
+#include <array>
 
 namespace cpplibsocket {
 

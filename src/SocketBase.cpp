@@ -1,15 +1,7 @@
 #include "cpplibsocket/Socket.h"
+#include "cpplibsocket/utils/utils.h"
 
 namespace cpplibsocket {
-
-static Port getBoundPort(SocketHandle socket) {
-    sockaddr_in sin;
-    SockLenType len = sizeof(sin);
-    if (::getsockname(socket, reinterpret_cast<sockaddr*>(&sin), &len) != 0) {
-        throw Exception(FUNC_NAME, "Couldn't get the bound port - ", getLastErrorFormatted());
-    }
-    return ntohs(sin.sin_port);
-}
 
 SocketBase::~SocketBase() {
     try {
@@ -66,7 +58,11 @@ Port SocketBase::bind(const std::string& ip, const Port port) {
         throw Exception(
             FUNC_NAME, "Couldn't bind address \"", ip, ":", port, "\" - ", getLastErrorFormatted());
     }
-    return getBoundPort(mSocketHandle);
+    return utils::detail::getBoundPort(mSocketHandle);
+}
+
+Port SocketBase::bindLocal(const Port port) {
+    return bind(utils::getLocalIpAddress(mIpVersion), port);
 }
 
 void SocketBase::setBlocked(const bool blocked) {
@@ -77,26 +73,6 @@ void SocketBase::setBlocked(const bool blocked) {
         throw Exception(
             FUNC_NAME, "Couldn't set blocking/non-blocking socket property - ", getLastErrorFormatted());
     }
-}
-
-Port SocketBase::getFreePort() {
-    SocketHandle s = ::socket(AF_INET, SOCK_DGRAM, 0);
-    if (s == Platform::SOCKET_NULL) {
-        throw Exception(FUNC_NAME, "Couldn't open socket - ", getLastErrorFormatted());
-    }
-
-    sockaddr_in addr;
-    addr.sin_port = 0;
-    addr.sin_addr.s_addr = 0;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_family = AF_INET;
-
-    if (::bind(s, reinterpret_cast<sockaddr*>(&addr), sizeof(sockaddr_in)) != 0) {
-        throw Exception(
-            FUNC_NAME, "Couldn't bind any port", getLastErrorFormatted());
-    }
-
-    return getBoundPort(s);
 }
 
 SocketBase::SocketBase(const IPProto ipProtocol, const IPVer ipVersion)
@@ -113,32 +89,7 @@ SocketBase::SocketBase(const IPProto ipProtocol,
     , mIpVersion(ipVersion) {}
 
 sockaddr SocketBase::createAddr(const std::string& hostIp, const Port port) const {
-    sockaddr addr = {};
-    void* addrOutDestionation = nullptr;
-    switch (mIpVersion) {
-    case IPVer::IPV4: {
-        sockaddr_in& addr4 = reinterpret_cast<sockaddr_in&>(addr);
-        addr4.sin_port = htons(port);
-        addr4.sin_family = AF_INET;
-        addrOutDestionation = &addr4.sin_addr;
-        break;
-    }
-    case IPVer::IPV6: {
-        sockaddr_in6& addr6 = reinterpret_cast<sockaddr_in6&>(addr);
-        addr6.sin6_port = htons(port);
-        addr6.sin6_family = AF_INET6;
-        addrOutDestionation = &addr6.sin6_addr;
-        break;
-    }
-    default:
-        MISSING_CASE_LABEL;
-        throw Exception(FUNC_NAME, "Socket has invalid IP version: ", static_cast<int>(mIpVersion));
-    }
-    if (::inet_pton(addr.sa_family, hostIp.c_str(), addrOutDestionation) != 1) {
-        throw Exception(
-            FUNC_NAME, "Couldn't convert IP address string to network format - ", getLastErrorFormatted());
-    }
-    return addr;
+    return utils::detail::createAddr(mIpVersion, hostIp, port);
 }
 
 } // namespace cpplibsocket

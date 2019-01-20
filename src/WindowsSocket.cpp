@@ -1,4 +1,4 @@
-#include "cpplibsocket/WindowsSocket.h"
+#include "cpplibsocket/SocketCommon.h"
 
 #include <algorithm>
 #include <limits>
@@ -42,13 +42,13 @@ std::string getLastErrorFormatted() {
     return getErrorString(WSAGetLastError());
 }
 
-bool initializeWinsock() {
+static bool initializeWinsock() {
     ASSERT(gAllocatedSockets.empty());
     WSAData wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData) == 0;
 }
 
-void cleanUpWinsock() {
+static void cleanUpWinsock() {
     ASSERT(gAllocatedSockets.empty());
     WSACleanup();
 }

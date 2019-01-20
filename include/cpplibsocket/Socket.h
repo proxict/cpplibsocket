@@ -1,15 +1,10 @@
 #ifndef CPPLIBSOCKET_SOCKET_H_
 #define CPPLIBSOCKET_SOCKET_H_
 
+#include "cpplibsocket/SocketCommon.h"
 #include "cpplibsocket/common/Assert.h"
 #include "cpplibsocket/utils/AnyOf.h"
 #include "cpplibsocket/utils/Expected.h"
-
-#ifdef _WIN32
-#include "cpplibsocket/WindowsSocket.h"
-#else
-#include "cpplibsocket/LinuxSocket.h"
-#endif
 
 namespace cpplibsocket {
 
@@ -47,12 +42,19 @@ public:
     /// \throws Exception in case the socket is not open or if the binding fails
     Port bind(const std::string& ip, const Port port = 0);
 
+    /// Assigns a local address to the socket, AKA assigns a name to the socket
+    ///
+    /// It is normally necessary to assign a local address to the socket before a TCP socket may receive
+    /// connections (\see accept()).
+    /// \param port The port to assign. If the port is 0, any free local port will be used.
+    /// \returns Port which was bound to the socket
+    /// \throws Exception in case the socket is not open or if the binding fails
+    Port bindLocal(const Port port = 0);
+
     /// Sets blocking or non-blocking property of the socket
     /// \param blocked If true, the socket will be set as blocking, if false, the socket will be non-blocking.
     /// \throws Exception in case the socket is not open or if setting the property fails.
     void setBlocked(const bool blocked = true);
-
-    static Port getFreePort();
 
 protected:
     /// Creates a new socket with the given protocol and IP version

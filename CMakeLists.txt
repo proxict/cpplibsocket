@@ -15,6 +15,7 @@ add_library(cpplibsocket STATIC
     src/SocketBase.cpp
     src/SocketTcp.cpp
     src/SocketUdp.cpp
+    src/utils.cpp
 )
 
 target_include_directories(cpplibsocket

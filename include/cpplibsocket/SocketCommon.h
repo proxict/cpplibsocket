@@ -1,9 +1,9 @@
 #ifndef CPPLIBSOCKET_SOCKETCOMMON_H_
 #define CPPLIBSOCKET_SOCKETCOMMON_H_
 
+#include "cpplibsocket/common/Assert.h"
 #include "cpplibsocket/common/Exception.h"
 #include "cpplibsocket/common/common.h"
-#include "cpplibsocket/common/Assert.h"
 
 #include <cstring>
 #include <type_traits>
@@ -15,6 +15,7 @@
 #include <winsock2.h>
 #else
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #endif
 
@@ -92,6 +93,36 @@ inline int toNativeProtocol(const IPProto protocol) {
         throw Exception(FUNC_NAME, "Invalid IP protocol passed: ", static_cast<int>(protocol));
     }
 }
+
+/// Returns a string representation of the last error that occurred in either system calls or in some library
+/// functions.
+std::string getLastErrorFormatted();
+
+namespace Platform {
+
+    SignedSize send(SocketHandle socket, const Byte* data, const UnsignedSize size);
+
+    SignedSize sendTo(SocketHandle socket, const Byte* data, const UnsignedSize size, const sockaddr* addr);
+
+    SignedSize receive(SocketHandle socket, Byte* data, const UnsignedSize size);
+
+    SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize size, sockaddr* addr);
+
+    bool setBlocked(SocketHandle socket, const bool blocked = true);
+
+    SocketHandle openSocket(const IPProto ipProtocol, const IPVer ipVersion);
+
+    bool closeSocket(SocketHandle socket);
+
+    std::string getLocalIpAddress(const IPVer ipVersion);
+
+#ifdef _WIN32
+    static constexpr SocketHandle SOCKET_NULL = INVALID_SOCKET;
+#else
+    static constexpr SocketHandle SOCKET_NULL = -1;
+#endif
+
+} // namespace Platform
 
 } // namespace cpplibsocket
 

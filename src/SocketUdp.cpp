@@ -1,4 +1,5 @@
 #include "cpplibsocket/Socket.h"
+#include "cpplibsocket/utils/utils.h"
 
 namespace cpplibsocket {
 
@@ -56,26 +57,10 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
         }
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
     }
-    // TODO: Function toIpVersion(int nativeIpVersion);
-    sourceIpVersion = addr.sa_family == AF_INET ? IPVer::IPV4 : IPVer::IPV6;
-    switch (addr.sa_family) {
-    case AF_INET: {
-        char addrRaw[16] = {};
-        ::inet_ntop(addr.sa_family, reinterpret_cast<const sockaddr_in*>(&addr), addrRaw, sizeof(addrRaw));
-        sourceIp = addrRaw;
-        sourcePort = ntohs(reinterpret_cast<const sockaddr_in*>(&addr)->sin_port);
-        break;
-    }
-    case AF_INET6: {
-        char addrRaw[40] = {};
-        ::inet_ntop(addr.sa_family, reinterpret_cast<const sockaddr_in6*>(&addr), addrRaw, sizeof(addrRaw));
-        sourceIp = addrRaw;
-        sourcePort = ntohs(reinterpret_cast<const sockaddr_in6*>(&addr)->sin6_port);
-        break;
-    }
-    default:
-        throw Exception(FUNC_NAME, "Unknown IP version from client");
-    }
+    sourceIpVersion = toIPVer(addr.sa_family);
+    sourceIp = utils::detail::getIpAddress(addr);
+    sourcePort = utils::detail::getPort(addr);
+
     ASSERT(received >= 0);
     return static_cast<UnsignedSize>(received);
 }
