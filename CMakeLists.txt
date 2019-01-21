@@ -25,6 +25,7 @@ target_include_directories(cpplibsocket
 if (${platform} STREQUAL "Windows")
 	target_link_libraries(cpplibsocket
 		PRIVATE ws2_32.lib
+		PRIVATE IPHLPAPI.lib
 	)
 endif()
 

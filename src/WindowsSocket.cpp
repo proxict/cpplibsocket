@@ -1,21 +1,37 @@
 #include "cpplibsocket/SocketCommon.h"
+#include "cpplibsocket/utils/utils.h"
 
 #include <algorithm>
 #include <limits>
 #include <mutex>
 #include <set>
+#include <vector>
+
+#include <iphlpapi.h>
+
+class WinSockInitializer {
+    bool mInitialized;
+
+public:
+    WinSockInitializer()
+        : mInitialized(false) {
+        WSAData wsaData;
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            throw;
+        }
+        mInitialized = true;
+    }
+
+    ~WinSockInitializer() {
+        if (mInitialized) {
+            WSACleanup();
+        }
+    }
+};
+
+static WinSockInitializer gWinsockInitializer;
 
 namespace cpplibsocket {
-
-/// In Windows, before using any socket functionality, WinSocket library must be initialized. The same way,
-/// after the work with WinSockets is done, the library must be cleaned up properly. To ensure this is done
-/// correctly and hidden from users of this library, global storage for explicitly created sockets is
-/// introduced. We cannot use a simple counter here as some functions can create a socket for us, bypassing
-/// the counter incrementation, but we still need to take care of their destruction, thus the counter would be
-/// decremented up on the socket destruction, which could lead to unintentional library cleanup before it's
-/// actually needed. This solution is also thread safe.
-static std::set<SocketHandle> gAllocatedSockets;
-static std::mutex gSocketMutex;
 
 std::string getErrorString(const DWORD errorId) {
     LPSTR output = nullptr;
@@ -40,17 +56,6 @@ std::string getErrorString(const DWORD errorId) {
 
 std::string getLastErrorFormatted() {
     return getErrorString(WSAGetLastError());
-}
-
-static bool initializeWinsock() {
-    ASSERT(gAllocatedSockets.empty());
-    WSAData wsaData;
-    return WSAStartup(MAKEWORD(2, 2), &wsaData) == 0;
-}
-
-static void cleanUpWinsock() {
-    ASSERT(gAllocatedSockets.empty());
-    WSACleanup();
 }
 
 namespace Platform {
@@ -89,33 +94,45 @@ namespace Platform {
     }
 
     SocketHandle openSocket(const IPProto ipProtocol, const IPVer ipVersion) {
-        std::lock_guard<std::mutex> lock(gSocketMutex);
-        if (gAllocatedSockets.empty()) {
-            if (!initializeWinsock()) {
-                throw Exception(FUNC_NAME, "Couldn't initialize WinSockets - ", getLastErrorFormatted());
-            }
-        }
-        const SocketHandle socket =
-            ::socket(toNativeDomain(ipVersion), toNativeType(ipProtocol), toNativeProtocol(ipProtocol));
-        if (socket != SOCKET_NULL) {
-            gAllocatedSockets.insert(socket);
-        }
-        return socket;
+        return ::socket(toNativeDomain(ipVersion), toNativeType(ipProtocol), toNativeProtocol(ipProtocol));
     }
 
     bool closeSocket(SocketHandle socket) {
-        const int ret = ::closesocket(socket);
-        std::lock_guard<std::mutex> lock(gSocketMutex);
-        if (ret != SOCKET_ERROR) {
-            const auto closedSocket = gAllocatedSockets.find(socket);
-            if (closedSocket != gAllocatedSockets.end()) {
-                gAllocatedSockets.erase(closedSocket);
-            }
-            if (gAllocatedSockets.empty()) {
-                cleanUpWinsock();
-            }
+        return ::closesocket(socket) != SOCKET_ERROR;
+    }
+
+    std::string getLocalIpAddress(const IPVer ipVersion) {
+        std::vector<IP_ADAPTER_ADDRESSES> adapterAddresses;
+        ULONG adapterCnt = 0;
+        auto getAdapters = [&adapterAddresses, &adapterCnt, ipVersion] {
+            return GetAdaptersAddresses((ULONG)toNativeDomain(ipVersion),
+                                        GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
+                                        nullptr,
+                                        adapterAddresses.data(),
+                                        &adapterCnt);
+        };
+
+        // Get just the number of adapters
+        ULONG retval = getAdapters();
+        if (retval != ERROR_BUFFER_OVERFLOW || adapterCnt == 0) {
+            throw Exception(FUNC_NAME, "Couldn't get local IP address - ", getLastErrorFormatted());
         }
-        return ret != SOCKET_ERROR;
+        adapterAddresses.resize(adapterCnt);
+
+        // Now get the actual adresses
+        retval = getAdapters();
+        if (retval != ERROR_SUCCESS) {
+            throw Exception(FUNC_NAME, "Couldn't get local IP address - ", getLastErrorFormatted());
+        }
+
+        for (IP_ADAPTER_ADDRESSES* item = adapterAddresses.data(); item; item = item->Next) {
+            if (item->OperStatus != IfOperStatusUp) {
+                continue;
+            }
+            return utils::detail::getIpAddress(*item->FirstUnicastAddress->Address.lpSockaddr);
+        }
+
+        throw Exception(FUNC_NAME, "Couldn't get local IP address");
     }
 
 } // namespace Platform
