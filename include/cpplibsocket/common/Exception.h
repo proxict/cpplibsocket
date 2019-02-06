@@ -1,8 +1,10 @@
-#ifndef EXCEPTION_H_
-#define EXCEPTION_H_
+#ifndef CPPLIBSOCKET_COMMON_EXCEPTION_H_
+#define CPPLIBSOCKET_COMMON_EXCEPTION_H_
 
 #include <string>
 #include <sstream>
+
+namespace cpplibsocket {
 
 class Exception {
 public:
@@ -31,4 +33,6 @@ private:
     std::string mMessage;
 };
 
-#endif
+} // namespace cpplibsocket
+
+#endif // CPPLIBSOCKET_COMMON_EXCEPTION_H_
