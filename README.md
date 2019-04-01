@@ -23,6 +23,7 @@ Building cpplibsockets
    - `cd cpplibsockets`
    - `mkdir build && cd build`
    - `cmake --DCMAKE_BUILD_TYPE=Release ..`
+   - `make -j$(nproc)`
   
  - Windows (Visual Studio 2017 64bit build):
    - `git clone git@github.com:proxict/cpplibsocket.git`
