@@ -19,13 +19,13 @@ Building cpplibsockets
 ----------------------
  
  - Linux:
-   - `git clone ...`
+   - `git clone git@github.com:proxict/cpplibsocket.git`
    - `cd cpplibsockets`
    - `mkdir build && cd build`
    - `cmake --DCMAKE_BUILD_TYPE=Release ..`
   
  - Windows (Visual Studio 2017 64bit build):
-   - `git clone ...`
+   - `git clone git@github.com:proxict/cpplibsocket.git`
    - `cd cpplibsockets`
    - `mkdir build && cd build`
    - `cmake.exe -G "Visual Studio 15 2017 Win64" ..`
