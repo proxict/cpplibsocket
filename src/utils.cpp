@@ -21,10 +21,14 @@ namespace utils {
             char str[INET6_ADDRSTRLEN] = {};
             switch (toIPVer(addr.sa_family)) {
             case IPVer::IPV4:
-                ::inet_ntop(addr.sa_family, reinterpret_cast<const sockaddr_in*>(&addr), str, sizeof(str));
+                ::inet_ntop(
+                    AF_INET, &reinterpret_cast<const sockaddr_in*>(&addr)->sin_addr, str, sizeof(str));
                 return std::string(str);
             case IPVer::IPV6:
-                ::inet_ntop(addr.sa_family, reinterpret_cast<const sockaddr_in6*>(&addr), str, sizeof(str));
+                ::inet_ntop(addr.sa_family,
+                            &reinterpret_cast<const sockaddr_in6*>(&addr)->sin6_addr,
+                            str,
+                            sizeof(str));
                 return std::string(str);
             default:
                 throw Exception(FUNC_NAME, "Unknown IP version from client");
@@ -117,9 +121,7 @@ namespace utils {
         throw Exception(FUNC_NAME, "Couldn't get " + hostName + " host IP");
     }
 
-    std::string getLocalIpAddress(const IPVer ipVersion) {
-        return Platform::getLocalIpAddress(ipVersion);
-    }
+    std::string getLocalIpAddress(const IPVer ipVersion) { return Platform::getLocalIpAddress(ipVersion); }
 
     Port getFreePort() {
         SocketHandle s = ::socket(AF_INET, SOCK_DGRAM, 0);
