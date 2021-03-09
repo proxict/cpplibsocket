@@ -62,7 +62,34 @@ Port SocketBase::bind(const std::string& ip, const Port port) {
 }
 
 Port SocketBase::bindLocal(const Port port) {
-    return bind(utils::getLocalIpAddress(mIpVersion), port);
+    if (!isOpen()) {
+        throw Exception(FUNC_NAME, "Socket is not open");
+    }
+    sockaddr addr = {};
+    switch (mIpVersion) {
+    case IPVer::IPV4: {
+        sockaddr_in& addr4 = reinterpret_cast<sockaddr_in&>(addr);
+        addr4.sin_addr.s_addr = INADDR_ANY;
+        addr4.sin_port = htons(port);
+        addr4.sin_family = AF_INET;
+        break;
+    }
+    case IPVer::IPV6: {
+        sockaddr_in6& addr6 = reinterpret_cast<sockaddr_in6&>(addr);
+        addr6.sin6_addr = IN6ADDR_ANY_INIT;
+        addr6.sin6_port = htons(port);
+        addr6.sin6_family = AF_INET6;
+        break;
+    }
+    default:
+        MISSING_CASE_LABEL;
+        throw Exception(FUNC_NAME, "Socket has invalid IP version: ", static_cast<int>(mIpVersion));
+    }
+    if (::bind(mSocketHandle, &addr, getAddrSize(mIpVersion)) != 0) {
+        throw Exception(
+            FUNC_NAME, "Couldn't bind local address to port \"", port, "\" - ", getLastErrorFormatted());
+    }
+    return utils::detail::getBoundPort(mSocketHandle);
 }
 
 void SocketBase::setBlocked(const bool blocked) {

@@ -73,9 +73,12 @@ namespace Platform {
         }
 
         for (ifaddrs* walk = addr; walk != nullptr; walk = walk->ifa_next) {
+            if (!walk->ifa_addr) {
+                continue;
+            }
             const int family = walk->ifa_addr->sa_family;
-            if (walk->ifa_addr == nullptr || family != toNativeDomain(ipVersion) ||
-                !(walk->ifa_flags & IFF_UP)) {
+            if (family != toNativeDomain(ipVersion) || !(walk->ifa_flags & IFF_UP) ||
+                (walk->ifa_flags & IFF_LOOPBACK)) {
                 continue;
             }
 
