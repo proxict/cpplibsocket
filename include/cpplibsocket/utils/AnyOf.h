@@ -6,7 +6,7 @@
 
 namespace cpplibsocket {
 
-template <typename T, int TSize>
+template <typename T, std::size_t TSize>
 struct AnyOfThis {
     template <typename TFirst, typename... TOthers>
     explicit AnyOfThis(TFirst&& first, TOthers&&... others)
@@ -22,7 +22,7 @@ auto anyOf(TFirst&& first, TOthers&&... others) {
                                                               std::forward<TOthers>(others)...);
 }
 
-template <typename T, int TSize>
+template <typename T, std::size_t TSize>
 bool operator==(const T value, const AnyOfThis<typename std::decay<T>::type, TSize>& anyOfThis) {
     return std::find(anyOfThis.values.begin(), anyOfThis.values.end(), value) != anyOfThis.values.end();
 }

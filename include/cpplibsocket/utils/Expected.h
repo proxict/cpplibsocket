@@ -15,12 +15,12 @@ namespace Detail {
         using Type = std::decay<TOtherError>;
     };
 
-    template <int TSize>
+    template <std::size_t TSize>
     struct ExpectedError<const char (&)[TSize]> {
         using Type = std::string;
     };
 
-    template <int TSize>
+    template <std::size_t TSize>
     struct ExpectedError<const wchar_t (&)[TSize]> {
         using Type = std::wstring;
     };

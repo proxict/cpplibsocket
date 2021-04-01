@@ -23,23 +23,20 @@ namespace utils {
     } // namespace detail
 
     template <typename TFunctor = std::function<void()>>
-    class Finally {
+    class Finally final {
     protected:
         TFunctor mFunctor;
 
     public:
-        Finally(const TFunctor& mFunctor)
-            : mFunctor(mFunctor) {}
-
-        Finally(TFunctor&& mFunctor)
-            : mFunctor(std::move(mFunctor)) {}
+        Finally(TFunctor functor)
+            : mFunctor(std::move(functor)) {}
 
         ~Finally() { mFunctor(); }
     };
 
-    template <typename TFunctor>
-    Finally<typename std::remove_reference<TFunctor>::type> makeFinally(TFunctor&& closure) {
-        return Finally<typename std::remove_reference<TFunctor>::type>(std::forward<TFunctor>(closure));
+    template <typename TFunctor, typename TRefFree = typename std::remove_reference<TFunctor>::type>
+    Finally<TRefFree> makeFinally(TFunctor&& closure) {
+        return Finally<TRefFree>(std::forward<TFunctor>(closure));
     }
 
     std::string getHostIpAddress(const std::string& hostName, const IPVer ipVersion = IPVer::IPV4);
