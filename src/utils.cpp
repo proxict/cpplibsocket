@@ -104,10 +104,10 @@ namespace utils {
             const IPVer storedIpVer = toIPVer(p->ai_family);
             if (storedIpVer == ipVersion) {
                 if (storedIpVer == IPVer::IPV4) {
-                    struct sockaddr_in* ipv4 = (struct sockaddr_in*)p->ai_addr;
+                    struct sockaddr_in* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
                     addr = &(ipv4->sin_addr);
                 } else if (storedIpVer == IPVer::IPV6) {
-                    struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)p->ai_addr;
+                    struct sockaddr_in6* ipv6 = reinterpret_cast<struct sockaddr_in6*>(p->ai_addr);
                     addr = &(ipv6->sin6_addr);
                 }
             }

@@ -17,29 +17,25 @@ std::string getLastErrorFormatted() {
 namespace Platform {
 
     SignedSize send(SocketHandle socket, const Byte* data, const UnsignedSize size) {
-        const size_t viableSize = static_cast<size_t>(
-            std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), size));
-        return static_cast<SignedSize>(::send(socket, data, viableSize, 0));
+        const std::size_t viableSize = std::min(std::numeric_limits<size_t>::max(), size);
+        return ::send(socket, data, viableSize, 0);
     }
 
     SignedSize sendTo(SocketHandle socket, const Byte* data, const UnsignedSize size, const sockaddr* addr) {
-        const size_t viableSize = static_cast<size_t>(
-            std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), size));
+        const std::size_t viableSize = std::min(std::numeric_limits<size_t>::max(), size);
         const SockLenType sockSize = getAddrSize(toIPVer(addr->sa_family));
-        return static_cast<SignedSize>(::sendto(socket, data, viableSize, 0, addr, sockSize));
+        return ::sendto(socket, data, viableSize, 0, addr, sockSize);
     }
 
     SignedSize receive(SocketHandle socket, Byte* data, const UnsignedSize maxSize) {
-        const size_t viableSize = static_cast<size_t>(
-            std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), maxSize));
-        return static_cast<SignedSize>(::recv(socket, data, viableSize, 0));
+        const std::size_t viableSize = std::min(std::numeric_limits<size_t>::max(), maxSize);
+        return ::recv(socket, data, viableSize, 0);
     }
 
     SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize maxSize, sockaddr* addr) {
-        const size_t viableSize = static_cast<size_t>(
-            std::min(static_cast<UnsignedSize>(std::numeric_limits<size_t>::max()), maxSize));
+        const std::size_t viableSize = std::min(std::numeric_limits<size_t>::max(), maxSize);
         SockLenType dummy = sizeof(sockaddr);
-        return static_cast<SignedSize>(::recvfrom(socket, data, viableSize, 0, addr, &dummy));
+        return ::recvfrom(socket, data, viableSize, 0, addr, &dummy);
     }
 
     bool setBlocked(SocketHandle socket, const bool blocked) {

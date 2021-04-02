@@ -16,7 +16,7 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
     const sockaddr addr = createAddr(hostIp, hostPort);
     const SignedSize sent = Platform::sendTo(mSocketHandle, data, size, &addr);
     if (sent == -1) {
-        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+        if (errno == EWOULDBLOCK) {
             return makeUnexpected("Socket would block");
         }
         throw Exception(FUNC_NAME, "Couldn't send data - ", getLastErrorFormatted());
@@ -32,7 +32,7 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data, const Unsig
     sockaddr addr;
     const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, &addr);
     if (received == -1) {
-        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+        if (errno == EWOULDBLOCK) {
             return makeUnexpected("Socket would block");
         }
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
@@ -52,7 +52,7 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
     sockaddr addr;
     const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, &addr);
     if (received == -1) {
-        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+        if (errno == EWOULDBLOCK) {
             return makeUnexpected("Socket would block");
         }
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
