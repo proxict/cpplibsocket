@@ -5,6 +5,8 @@ set(platform ${CMAKE_SYSTEM_NAME})
 include("cmake/${platform}-compiler-config.txt")
 include(cmake/doxygen.txt)
 
+add_subdirectory(external/lib-expected)
+
 add_library(cpplibsocket STATIC
     src/${platform}Socket.cpp
     src/SocketBase.cpp
@@ -17,6 +19,9 @@ target_include_directories(cpplibsocket
     PUBLIC include
 )
 
+target_link_libraries(cpplibsocket
+    PRIVATE lib-expected
+)
 if (${platform} STREQUAL "Windows")
 	target_link_libraries(cpplibsocket
 		PRIVATE ws2_32.lib

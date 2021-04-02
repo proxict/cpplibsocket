@@ -1,0 +1,6 @@
+--language=c++
+-std=c++14
+-Iinclude
+-Iexternal/lib-expected/include
+-Wall
+-Wextra
