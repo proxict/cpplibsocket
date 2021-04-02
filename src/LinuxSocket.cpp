@@ -79,7 +79,8 @@ namespace Platform {
             }
 
             char addrRaw[NI_MAXHOST] = {};
-            const SockLenType sockSize = family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6);
+            const SockLenType sockSize =
+                static_cast<SockLenType>(family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6));
 
             const int status =
                 getnameinfo(walk->ifa_addr, sockSize, addrRaw, sizeof(addrRaw), nullptr, 0, NI_NUMERICHOST);
