@@ -20,7 +20,7 @@ target_include_directories(cpplibsocket
 )
 
 target_link_libraries(cpplibsocket
-    PRIVATE lib-expected
+    PUBLIC lib-expected
 )
 if (${platform} STREQUAL "Windows")
 	target_link_libraries(cpplibsocket
