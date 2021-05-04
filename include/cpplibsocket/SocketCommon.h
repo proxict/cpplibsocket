@@ -5,6 +5,7 @@
 #include "cpplibsocket/common/Exception.h"
 #include "cpplibsocket/common/common.h"
 
+#include <chrono>
 #include <cstring>
 #include <type_traits>
 
@@ -109,6 +110,21 @@ namespace Platform {
     SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize size, sockaddr* addr);
 
     bool setBlocked(SocketHandle socket, const bool blocked = true);
+
+    template <typename TRep, typename TPeriod>
+    bool
+    setTimeout(SocketHandle socket, const int direction, const std::chrono::duration<TRep, TPeriod> timeout) {
+#ifdef _WIN32
+        const DWORD timeoutMs = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
+        const DWORD optname = static_cast<DWORD>(direction);
+        const char* optval = static_cast<const char*>(&timeoutMs);
+        return setsockopt(socket, SOL_SOCKET, optname, optval, sizeof(DWORD)) != SOCKET_ERROR;
+#else
+        const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
+        const timeval tv{ milliseconds / 1000, (milliseconds % 1000) * 1000 };
+        return setsockopt(socket, SOL_SOCKET, direction, &tv, sizeof(tv)) != -1;
+#endif
+    }
 
     SocketHandle openSocket(const IPProto ipProtocol, const IPVer ipVersion);
 

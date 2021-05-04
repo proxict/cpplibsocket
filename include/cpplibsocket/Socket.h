@@ -56,6 +56,32 @@ public:
     /// \throws Exception in case the socket is not open or if setting the property fails.
     void setBlocked(const bool blocked = true);
 
+    /// Sets timeout for receiving data from the socket
+    /// \param timeout The timeout to set.
+    /// \throws Exception in case the socket is not open or if setting the timeout fails.
+    template <typename TRep, typename TPeriod>
+    void setRecvTimeout(const std::chrono::duration<TRep, TPeriod> timeout) {
+        if (!isOpen()) {
+            throw Exception(FUNC_NAME, "The socket is not open");
+        }
+        if (!Platform::setTimeout(mSocketHandle, SO_RCVTIMEO, timeout)) {
+            throw Exception(FUNC_NAME, "Couldn't set socket timeout - ", getLastErrorFormatted());
+        }
+    }
+
+    /// Sets timeout for sending data from the socket
+    /// \param timeout The timeout to set.
+    /// \throws Exception in case the socket is not open or if setting the timeout fails.
+    template <typename TRep, typename TPeriod>
+    void setSendTimeout(const std::chrono::duration<TRep, TPeriod> timeout) {
+        if (!isOpen()) {
+            throw Exception(FUNC_NAME, "The socket is not open");
+        }
+        if (!Platform::setTimeout(mSocketHandle, SO_SNDTIMEO, timeout)) {
+            throw Exception(FUNC_NAME, "Couldn't set socket timeout - ", getLastErrorFormatted());
+        }
+    }
+
 protected:
     /// Creates a new socket with the given protocol and IP version
     /// \throws Exception in case there were some problems while opening the socket.
