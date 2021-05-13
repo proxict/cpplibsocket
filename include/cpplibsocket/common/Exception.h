@@ -3,21 +3,24 @@
 
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
 namespace cpplibsocket {
 
-class Exception {
+class Exception : public std::runtime_error {
 public:
     template <typename ...TArgs>
-    explicit Exception(const std::string& message, TArgs&&... args) {
-        mMessage = stringify(message, std::forward<TArgs>(args)...);
-    }
+    explicit Exception(const std::string& message, TArgs&&... args) : std::runtime_error(stringify(message, std::forward<TArgs>(args)...)) {}
 
-    const std::string& what() const noexcept {
-        return mMessage;
-    }
+    virtual ~Exception() noexcept = default;
+
+    Exception(Exception&&) noexcept = default;
 
 private:
+    Exception(const Exception&) = delete;
+    Exception& operator=(const Exception&) = delete;
+    Exception& operator=(Exception&&) = delete;
+
 	template <typename T>
 	std::string stringify(const T& arg) {
 		std::ostringstream ss;
@@ -29,8 +32,6 @@ private:
 	std::string stringify(const T& first, Args&& ...args) {
 		return stringify(first) + stringify(std::forward<Args>(args)...);
 	}
-
-    std::string mMessage;
 };
 
 } // namespace cpplibsocket

@@ -3,7 +3,7 @@
 
 namespace cpplibsocket {
 
-SocketBase::~SocketBase() {
+SocketBase::~SocketBase() noexcept {
     try {
         if (isOpen()) {
             close();
@@ -12,7 +12,7 @@ SocketBase::~SocketBase() {
     }
 }
 
-SocketBase& SocketBase::operator=(SocketBase&& other) {
+SocketBase& SocketBase::operator=(SocketBase&& other) noexcept {
     mSocketHandle = other.mSocketHandle;
     mIpVersion = other.mIpVersion;
     other.mSocketHandle =
@@ -20,7 +20,7 @@ SocketBase& SocketBase::operator=(SocketBase&& other) {
     return *this;
 }
 
-SocketBase::SocketBase(SocketBase&& other) {
+SocketBase::SocketBase(SocketBase&& other) noexcept {
     *this = std::move(other);
 }
 

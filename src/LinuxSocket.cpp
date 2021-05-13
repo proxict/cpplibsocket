@@ -1,4 +1,5 @@
 #include "cpplibsocket/SocketCommon.h"
+#include "cpplibsocket/utils/Defer.h"
 #include "cpplibsocket/utils/utils.h"
 
 #include <fcntl.h>
@@ -34,8 +35,8 @@ namespace Platform {
 
     SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize maxSize, sockaddr* addr) {
         const std::size_t viableSize = std::min(std::numeric_limits<size_t>::max(), maxSize);
-        SockLenType dummy = sizeof(sockaddr);
-        return ::recvfrom(socket, data, viableSize, 0, addr, &dummy);
+        SockLenType sockSize = sizeof(sockaddr_storage);
+        return ::recvfrom(socket, data, viableSize, 0, addr, &sockSize);
     }
 
     bool setBlocked(SocketHandle socket, const bool blocked) {
@@ -59,7 +60,7 @@ namespace Platform {
 
     std::string getLocalIpAddress(const IPVer ipVersion) {
         ifaddrs* addr = nullptr;
-        auto cleanup = utils::makeFinally([&addr]() {
+        auto cleanup = utils::makeDeferred([&addr]() noexcept {
             if (addr != nullptr) {
                 freeifaddrs(addr);
             }

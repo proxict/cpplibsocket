@@ -1,4 +1,4 @@
-#include "cpplibsocket/Socket.h"
+#include "cpplibsocket/SocketTcp.h"
 
 namespace cpplibsocket {
 
@@ -34,7 +34,7 @@ Expected<Socket<IPProto::TCP>> Socket<IPProto::TCP>::accept() const {
     const SocketHandle clientFileDescriptor = ::accept(mSocketHandle, &sourceAddr, &addrLen);
     if (clientFileDescriptor == -1) {
         if (errno == EWOULDBLOCK) {
-            return makeUnexpected("Socket would block");
+            return makeUnexpected("Timeout");
         }
         throw Exception(FUNC_NAME, "Couldn't accept client - ", getLastErrorFormatted());
     }
@@ -49,7 +49,7 @@ Expected<UnsignedSize> Socket<IPProto::TCP>::send(const Byte* data, const Unsign
     const SignedSize sent = Platform::send(mSocketHandle, data, size);
     if (sent == -1) {
         if (errno == EWOULDBLOCK) {
-            return makeUnexpected("Socket would block");
+            return makeUnexpected("Timeout");
         }
         throw Exception(FUNC_NAME, "Couldn't send data - ", getLastErrorFormatted());
     }
@@ -64,7 +64,7 @@ Expected<UnsignedSize> Socket<IPProto::TCP>::receive(Byte* data, const UnsignedS
     const SignedSize received = Platform::receive(mSocketHandle, data, maxSize);
     if (received == -1) {
         if (errno == EWOULDBLOCK) {
-            return makeUnexpected("Socket would block");
+            return makeUnexpected("Timeout");
         }
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
     }

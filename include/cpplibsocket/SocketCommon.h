@@ -37,6 +37,19 @@ enum class IPProto : int { TCP, UDP };
 
 enum class IPVer : int { IPV4, IPV6 };
 
+struct Endpoint {
+    Endpoint() noexcept = default;
+
+    Endpoint(const IPVer ipVer, std::string ipAddress, const Port port_) noexcept
+        : ipVersion(ipVer)
+        , ip(std::move(ipAddress))
+        , port(port_) {}
+
+    IPVer ipVersion;
+    std::string ip;
+    Port port;
+};
+
 inline IPVer toIPVer(const int nativeIpVersion) {
     switch (nativeIpVersion) {
     case AF_INET:
