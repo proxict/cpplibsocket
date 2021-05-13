@@ -13,8 +13,9 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't send data");
     }
-    const sockaddr addr = createAddr(hostIp, hostPort);
-    const SignedSize sent = Platform::sendTo(mSocketHandle, data, size, &addr);
+    const sockaddr_storage addr = createAddr(hostIp, hostPort);
+    const SignedSize sent =
+        Platform::sendTo(mSocketHandle, data, size, reinterpret_cast<const sockaddr*>(&addr));
     if (sent == -1) {
         if (errno == EWOULDBLOCK) {
             return makeUnexpected("Timeout");
@@ -25,12 +26,12 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
     return static_cast<UnsignedSize>(sent);
 }
 
-Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data, const UnsignedSize maxSize) {
+Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data, const UnsignedSize maxSize, Endpoint* source) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't receive data");
     }
-    sockaddr addr;
-    const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, &addr);
+    sockaddr_storage addr;
+    const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, reinterpret_cast<sockaddr*>(&addr));
     if (received == -1) {
         if (errno == EWOULDBLOCK) {
             return makeUnexpected("Timeout");
@@ -38,30 +39,7 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data, const Unsig
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
     }
     ASSERT(received >= 0);
-    return static_cast<UnsignedSize>(received);
-}
-
-Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data,
-                                                         const UnsignedSize maxSize,
-                                                         IPVer& sourceIpVersion,
-                                                         std::string& sourceIp,
-                                                         Port& sourcePort) {
-    if (!isOpen()) {
-        throw Exception(FUNC_NAME, "Couldn't receive data");
-    }
-    sockaddr addr;
-    const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, &addr);
-    if (received == -1) {
-        if (errno == EWOULDBLOCK) {
-            return makeUnexpected("Timeout");
-        }
-        throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
-    }
-    sourceIpVersion = toIPVer(addr.sa_family);
-    sourceIp = utils::detail::getIpAddress(addr);
-    sourcePort = utils::detail::getPort(addr);
-
-    ASSERT(received >= 0);
+    *source = utils::getEndpoint(reinterpret_cast<sockaddr*>(&addr));
     return static_cast<UnsignedSize>(received);
 }
 

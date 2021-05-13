@@ -97,7 +97,7 @@ protected:
 
     /// Creates a sockaddr structure from given IP address and port
     /// \throws Exception in case there was some error while creating the structure.
-    sockaddr createAddr(const std::string& hostIp, const Port port) const;
+    sockaddr_storage createAddr(const std::string& hostIp, const Port port) const;
 
     SocketHandle mSocketHandle = Platform::SOCKET_NULL;
     IPProto mIpProtocol;
