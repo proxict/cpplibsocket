@@ -37,6 +37,8 @@ enum class IPProto : int { TCP, UDP };
 
 enum class IPVer : int { IPV4, IPV6 };
 
+enum class Direction : int { TX, RX };
+
 struct Endpoint {
     Endpoint() noexcept = default;
 

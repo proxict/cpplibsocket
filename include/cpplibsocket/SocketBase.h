@@ -5,6 +5,7 @@
 #include "cpplibsocket/common/Assert.h"
 #include "cpplibsocket/utils/AnyOf.h"
 #include "cpplibsocket/utils/Expected.h"
+#include "cpplibsocket/utils/Flags.h"
 
 namespace cpplibsocket {
 
@@ -58,29 +59,23 @@ public:
 
     /// Sets timeout for receiving data from the socket
     /// \param timeout The timeout to set.
+    /// \direction The direction to set the timeout for.
     /// \throws Exception in case the socket is not open or if setting the timeout fails.
     template <typename TRep, typename TPeriod>
-    void setRecvTimeout(const std::chrono::duration<TRep, TPeriod> timeout) {
+    void setTimeout(const std::chrono::duration<TRep, TPeriod> timeout,
+                    const utils::Flags<Direction> direction = Direction::TX | Direction::RX) {
         if (!isOpen()) {
             throw Exception(FUNC_NAME, "The socket is not open");
         }
-        if (!Platform::setTimeout(mSocketHandle, SO_RCVTIMEO, timeout)) {
+        if (direction.isSet(Direction::TX) && !Platform::setTimeout(mSocketHandle, SO_SNDTIMEO, timeout)) {
+            throw Exception(FUNC_NAME, "Couldn't set socket timeout - ", getLastErrorFormatted());
+        }
+        if (direction.isSet(Direction::RX) && !Platform::setTimeout(mSocketHandle, SO_RCVTIMEO, timeout)) {
             throw Exception(FUNC_NAME, "Couldn't set socket timeout - ", getLastErrorFormatted());
         }
     }
 
-    /// Sets timeout for sending data from the socket
-    /// \param timeout The timeout to set.
-    /// \throws Exception in case the socket is not open or if setting the timeout fails.
-    template <typename TRep, typename TPeriod>
-    void setSendTimeout(const std::chrono::duration<TRep, TPeriod> timeout) {
-        if (!isOpen()) {
-            throw Exception(FUNC_NAME, "The socket is not open");
-        }
-        if (!Platform::setTimeout(mSocketHandle, SO_SNDTIMEO, timeout)) {
-            throw Exception(FUNC_NAME, "Couldn't set socket timeout - ", getLastErrorFormatted());
-        }
-    }
+    SocketHandle getSocketHandle() const noexcept { return mSocketHandle; }
 
 protected:
     /// Creates a new socket with the given protocol and IP version
