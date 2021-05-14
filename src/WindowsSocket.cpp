@@ -97,9 +97,7 @@ namespace Platform {
         return ::socket(toNativeDomain(ipVersion), toNativeType(ipProtocol), toNativeProtocol(ipProtocol));
     }
 
-    bool closeSocket(SocketHandle socket) {
-        return ::closesocket(socket) != SOCKET_ERROR;
-    }
+    bool closeSocket(SocketHandle socket) { return ::closesocket(socket) != SOCKET_ERROR; }
 
     std::string getLocalIpAddress(const IPVer ipVersion) {
         std::vector<IP_ADAPTER_ADDRESSES> adapterAddresses;
@@ -129,7 +127,7 @@ namespace Platform {
             if (item->OperStatus != IfOperStatusUp) {
                 continue;
             }
-            return utils::detail::getIpAddress(*item->FirstUnicastAddress->Address.lpSockaddr);
+            return utils::getEndpoint(item->FirstUnicastAddress->Address.lpSockaddr).ip;
         }
 
         throw Exception(FUNC_NAME, "Couldn't get local IP address");
