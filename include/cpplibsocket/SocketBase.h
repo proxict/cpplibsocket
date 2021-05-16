@@ -90,7 +90,7 @@ protected:
                const IPVer ipVersion,
                const SocketHandle clientSocketHandle) noexcept;
 
-    /// Creates a sockaddr structure from given IP address and port
+    /// Creates a sockaddr_storage structure from given IP address and port
     /// \throws Exception in case there was some error while creating the structure.
     sockaddr_storage createAddr(const std::string& hostIp, const Port port) const;
 

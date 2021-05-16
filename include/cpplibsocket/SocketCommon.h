@@ -39,6 +39,8 @@ enum class IPVer : int { IPV4, IPV6 };
 
 enum class Direction : int { TX, RX };
 
+struct WouldBlock {};
+
 struct Endpoint {
     Endpoint() noexcept = default;
 

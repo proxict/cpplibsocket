@@ -6,10 +6,10 @@ namespace cpplibsocket {
 Socket<IPProto::UDP>::Socket(const IPVer ipVersion)
     : SocketBase(IPProto::UDP, ipVersion) {}
 
-Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
-                                                    const UnsignedSize size,
-                                                    const std::string& hostIp,
-                                                    const Port hostPort) {
+Expected<UnsignedSize, WouldBlock> Socket<IPProto::UDP>::sendTo(const Byte* data,
+                                                                const UnsignedSize size,
+                                                                const std::string& hostIp,
+                                                                const Port hostPort) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't send data");
     }
@@ -18,7 +18,7 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
         Platform::sendTo(mSocketHandle, data, size, reinterpret_cast<const sockaddr*>(&addr));
     if (sent == -1) {
         if (errno == EWOULDBLOCK) {
-            return makeUnexpected("Timeout");
+            return makeUnexpected(WouldBlock{});
         }
         throw Exception(FUNC_NAME, "Couldn't send data - ", getLastErrorFormatted());
     }
@@ -26,15 +26,17 @@ Expected<UnsignedSize> Socket<IPProto::UDP>::sendTo(const Byte* data,
     return static_cast<UnsignedSize>(sent);
 }
 
-Expected<UnsignedSize> Socket<IPProto::UDP>::receiveFrom(Byte* data, const UnsignedSize maxSize, Endpoint* source) {
+Expected<UnsignedSize, WouldBlock>
+Socket<IPProto::UDP>::receiveFrom(Byte* data, const UnsignedSize maxSize, Endpoint* source) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't receive data");
     }
     sockaddr_storage addr;
-    const SignedSize received = Platform::receiveFrom(mSocketHandle, data, maxSize, reinterpret_cast<sockaddr*>(&addr));
+    const SignedSize received =
+        Platform::receiveFrom(mSocketHandle, data, maxSize, reinterpret_cast<sockaddr*>(&addr));
     if (received == -1) {
         if (errno == EWOULDBLOCK) {
-            return makeUnexpected("Timeout");
+            return makeUnexpected(WouldBlock{});
         }
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
     }

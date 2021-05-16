@@ -31,14 +31,14 @@ public:
     /// Accepts a client connection
     /// \returns A socket of the client connected
     /// \throws Exception in case the socket is not open or if the accept failed for whatever reason.
-    Expected<Socket> accept() const;
+    Expected<Socket, WouldBlock> accept() const;
 
     /// Sends data to the peer the socket is connected to
     /// \param data The data to send.
     /// \param size The data size.
     /// \returns If no error occurred, the size of the data sent is returned. An error is returned otherwise.
     /// \throws Exception in case the socket is not open or if there was some error while sending the data.
-    Expected<UnsignedSize> send(const Byte* data, const UnsignedSize size) const;
+    Expected<UnsignedSize, WouldBlock> send(const Byte* data, const UnsignedSize size) const;
 
     /// Receives data from peer the socket is connected to
     /// \param data The destination for the received data.
@@ -47,7 +47,7 @@ public:
     /// otherwise.
     /// \throws Exception in case the socket is not open or if there was some error while receiving
     /// the data.
-    Expected<UnsignedSize> receive(Byte* data, const UnsignedSize maxSize) const;
+    Expected<UnsignedSize, WouldBlock> receive(Byte* data, const UnsignedSize maxSize) const;
 
 private:
     Socket(const IPVer ipVersion, const SocketHandle clientSocketHandle) noexcept;

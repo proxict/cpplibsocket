@@ -21,7 +21,7 @@ public:
     /// \param hostPort The port the receiving socket is listening on.
     /// \returns If no error occurred, the size of the data sent is returned. An error is returned otherwise.
     /// \throws Exception in case the socket is not open or if there was some error while sending the data.
-    Expected<UnsignedSize>
+    Expected<UnsignedSize, WouldBlock>
     sendTo(const Byte* data, const UnsignedSize size, const std::string& hostIp, const Port hostPort);
 
     /// Receives data from the given IP address and port
@@ -32,7 +32,8 @@ public:
     /// \throws Exception in case the socket is not open or if there was some error while receiving
     /// the data.
     /// \param source[out] Storage for the source endpoint or nullptr if unused.
-    Expected<UnsignedSize> receiveFrom(Byte* data, const UnsignedSize maxSize, Endpoint* source = nullptr);
+    Expected<UnsignedSize, WouldBlock>
+    receiveFrom(Byte* data, const UnsignedSize maxSize, Endpoint* source = nullptr);
 };
 
 } // namespace cpplibsocket
