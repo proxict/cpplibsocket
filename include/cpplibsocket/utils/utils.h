@@ -7,13 +7,8 @@ namespace cpplibsocket {
 
 namespace traits {
     template <typename TFrom, typename TTo>
-    struct CastPointerImpl {
-        static constexpr bool IsConst = std::is_const<typename std::remove_pointer<TFrom>::type>::value;
-        using type = typename std::conditional<IsConst, const TTo*, TTo*>::type;
-    };
-
-    template <typename TFrom, typename TTo>
-    using CastPointer = typename CastPointerImpl<TFrom, TTo>::type;
+    using CastPointer = typename std::
+        conditional<std::is_const<typename std::remove_pointer<TFrom>::type>::value, const TTo*, TTo*>::type;
 
     template <IPVer TIPVer,
               typename...,
@@ -69,11 +64,11 @@ namespace utils {
 
     Endpoint getEndpoint(SocketHandle socket);
 
+    sockaddr_storage createAddr(const Endpoint& endpoint);
+
     sockaddr_storage createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port);
 
     std::string getLocalIpAddress(const IPVer ipVersion = IPVer::IPV4);
-
-    Port getFreePort();
 
 } // namespace utils
 

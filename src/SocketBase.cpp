@@ -63,37 +63,8 @@ Port SocketBase::bind(const std::string& ip, const Port port) {
     return ntohs(utils::getSinPort(reinterpret_cast<const sockaddr*>(&storage)));
 }
 
-Port SocketBase::bindLocal(const Port port) {
-    if (!isOpen()) {
-        throw Exception(FUNC_NAME, "Socket is not open");
-    }
-    sockaddr_storage storageBind = {};
-    sockaddr* addr = reinterpret_cast<sockaddr*>(&storageBind);
-    switch (mIpVersion) {
-    case IPVer::IPV4: {
-        sockaddr_in& addr4 = *traits::castAddrPointer<IPVer::IPV4>(addr);
-        addr4.sin_addr.s_addr = INADDR_ANY;
-        addr4.sin_port = htons(port);
-        addr4.sin_family = AF_INET;
-        break;
-    }
-    case IPVer::IPV6: {
-        sockaddr_in6& addr6 = *traits::castAddrPointer<IPVer::IPV6>(addr);
-        addr6.sin6_addr = IN6ADDR_ANY_INIT;
-        addr6.sin6_port = htons(port);
-        addr6.sin6_family = AF_INET6;
-        break;
-    }
-    default:
-        MISSING_CASE_LABEL;
-        throw Exception(FUNC_NAME, "Socket has invalid IP version: ", static_cast<int>(mIpVersion));
-    }
-    if (::bind(mSocketHandle, addr, getAddrSize(mIpVersion)) != 0) {
-        throw Exception(
-            FUNC_NAME, "Couldn't bind local address to port \"", port, "\" - ", getLastErrorFormatted());
-    }
-    const sockaddr_storage storageBound = utils::getAddressFromFd(mSocketHandle);
-    return ntohs(utils::getSinPort(reinterpret_cast<const sockaddr*>(&storageBound)));
+Port SocketBase::bindAll(const Port port) {
+    return bind("", port);
 }
 
 void SocketBase::setBlocked(const bool blocked) {

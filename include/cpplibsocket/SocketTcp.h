@@ -22,11 +22,11 @@ public:
     void connect(const std::string& hostIp, const Port hostPort);
 
     /// Starts listening for incoming connections
-    /// \param backLogSize Hint to the socket determining the maximum number of outstanding connections in the
+    /// \param backlogSize Hint to the socket determining the maximum number of outstanding connections in the
     /// socket's listen queue.
     /// \throws Exception in case the socket is not open or if there was some error while starting the
     /// listening.
-    void listen(const int backLogSize);
+    void listen(const int backlogSize);
 
     /// Accepts a client connection
     /// \returns A socket of the client connected

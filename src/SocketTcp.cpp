@@ -16,11 +16,11 @@ void Socket<IPProto::TCP>::connect(const std::string& hostIp, const Port hostPor
     }
 }
 
-void Socket<IPProto::TCP>::listen(const int backLogSize) {
+void Socket<IPProto::TCP>::listen(const int backlogSize) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "The socket is not open");
     }
-    if (::listen(mSocketHandle, backLogSize) == -1) {
+    if (::listen(mSocketHandle, backlogSize) == -1) {
         throw Exception(FUNC_NAME, "Couldn't open socket for listening - ", getLastErrorFormatted());
     }
 }

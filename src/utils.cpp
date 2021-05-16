@@ -25,38 +25,37 @@ namespace utils {
         return getEndpoint(reinterpret_cast<const sockaddr*>(&storage));
     }
 
+    sockaddr_storage createAddr(const Endpoint& endpoint) {
+        return createAddr(endpoint.ipVersion, endpoint.ip, endpoint.port);
+    }
+
     sockaddr_storage createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port) {
         struct sockaddr_storage storage = {};
+        sockaddr* addr = reinterpret_cast<sockaddr*>(&storage);
         storage.ss_family = toNativeDomain(ipVersion);
-        const int status = inet_pton(
-            storage.ss_family, ipAddress.c_str(), getSinAddr(reinterpret_cast<sockaddr*>(&storage)));
-        getSinPort(reinterpret_cast<sockaddr*>(&storage)) = htons(port);
-        if (status != 1) {
-            throw Exception(FUNC_NAME, "Invalid IP address ", ipAddress);
+        getSinPort(addr) = htons(port);
+
+        if (!ipAddress.empty()) {
+            if (inet_pton(storage.ss_family, ipAddress.c_str(), getSinAddr(addr)) != 1) {
+                throw Exception(FUNC_NAME, "Invalid IP address ", ipAddress);
+            }
+        } else {
+            switch (ipVersion) {
+            case IPVer::IPV4: {
+                traits::castAddrPointer<IPVer::IPV4>(addr)->sin_addr.s_addr = INADDR_ANY;
+                break;
+            }
+            case IPVer::IPV6: {
+                traits::castAddrPointer<IPVer::IPV6>(addr)->sin6_addr = IN6ADDR_ANY_INIT;
+                break;
+            }
+            }
         }
+
         return storage;
     }
 
     std::string getLocalIpAddress(const IPVer ipVersion) { return Platform::getLocalIpAddress(ipVersion); }
-
-    Port getFreePort() {
-        SocketHandle s = ::socket(AF_INET, SOCK_DGRAM, 0);
-        if (s == Platform::SOCKET_NULL) {
-            throw Exception(FUNC_NAME, "Couldn't open socket - ", getLastErrorFormatted());
-        }
-
-        sockaddr_in addr = {};
-        addr.sin_port = 0;
-        addr.sin_addr.s_addr = INADDR_ANY;
-        addr.sin_family = AF_INET;
-
-        if (::bind(s, reinterpret_cast<const sockaddr*>(&addr), sizeof(sockaddr_in)) != 0) {
-            throw Exception(FUNC_NAME, "Couldn't bind any port", getLastErrorFormatted());
-        }
-
-        const sockaddr_storage storage = getAddressFromFd(s);
-        return ntohs(getSinPort(reinterpret_cast<const sockaddr*>(&storage)));
-    }
 
 } // namespace utils
 
