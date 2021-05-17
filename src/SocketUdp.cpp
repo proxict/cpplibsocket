@@ -41,7 +41,9 @@ Socket<IPProto::UDP>::receiveFrom(Byte* data, const UnsignedSize maxSize, Endpoi
         throw Exception(FUNC_NAME, "Couldn't receive data - ", getLastErrorFormatted());
     }
     ASSERT(received >= 0);
-    *source = utils::getEndpoint(reinterpret_cast<sockaddr*>(&addr));
+    if (source) {
+        *source = utils::getEndpoint(reinterpret_cast<sockaddr*>(&addr));
+    }
     return static_cast<UnsignedSize>(received);
 }
 
