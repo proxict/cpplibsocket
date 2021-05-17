@@ -5,6 +5,7 @@ set(platform ${CMAKE_SYSTEM_NAME})
 include("cmake/${platform}-compiler-config.txt")
 include(cmake/doxygen.txt)
 
+SET(BUILD_TESTS OFF CACHE BOOL "Build tests of external libraries")
 add_subdirectory(external/lib-expected)
 add_subdirectory(external/lib-optional)
 
