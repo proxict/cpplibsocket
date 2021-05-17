@@ -2,6 +2,7 @@
 #define CPPLIBSOCKET_UTILS_UTILS_H_
 
 #include "cpplibsocket/SocketCommon.h"
+#include "cpplibsocket/utils/Optional.h"
 
 namespace cpplibsocket {
 
@@ -120,6 +121,10 @@ namespace utils {
 
     std::string getLocalIpAddress(const IPVer ipVersion = IPVer::IPV4);
 
+    static constexpr NullOptionalT UnspecIPVer = NullOptional;
+
+    Optional<std::string> resolveHostname(const std::string& hostname,
+                                          const Optional<IPVer> ipVersion = UnspecIPVer) noexcept;
 } // namespace utils
 
 } // namespace cpplibsocket

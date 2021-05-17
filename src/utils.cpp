@@ -83,5 +83,26 @@ namespace utils {
 
     std::string getLocalIpAddress(const IPVer ipVersion) { return Platform::getLocalIpAddress(ipVersion); }
 
+    Optional<std::string> resolveHostname(const std::string& hostname,
+                                          const Optional<IPVer> ipVersion) noexcept {
+        struct addrinfo hint = {};
+        hint.ai_family = AF_UNSPEC;
+        if (ipVersion) {
+            hint.ai_family = *ipVersion == IPVer::IPV4 ? AF_INET : AF_INET6;
+        }
+        try {
+            AddrInfo addrInfo(hostname, &hint);
+            for (struct addrinfo* info : addrInfo) {
+                try {
+                    return getEndpoint(info->ai_addr).ip;
+                } catch (...) {
+                    continue;
+                }
+            }
+        } catch (...) {
+        }
+        return NullOptional;
+    }
+
 } // namespace utils
 } // namespace cpplibsocket

@@ -2,5 +2,6 @@
 -std=c++14
 -Iinclude
 -Iexternal/lib-expected/include
+-Iexternal/lib-optional/include
 -Wall
 -Wextra
