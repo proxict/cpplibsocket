@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#define FUNC_NAME __func__, ": "
+#define FUNC_NAME __func__, "(): "
 
 namespace cpplibsocket {
 

@@ -58,6 +58,56 @@ namespace utils {
         }
     }
 
+    class AddrInfo final {
+    public:
+        class Iterator {
+        public:
+            using value_type = struct addrinfo*;
+            using difference_type = std::ptrdiff_t;
+            using pointer = struct addrinfo*;
+            using reference = struct addrinfo*&;
+            using iterator_category = std::forward_iterator_tag;
+
+            Iterator(struct addrinfo* info)
+                : mInfo(info) {}
+
+            Iterator& operator++() {
+                mInfo = mInfo->ai_next;
+                return *this;
+            }
+
+            Iterator operator++(int) {
+                auto i = *this;
+                ++(*this);
+                return i;
+            }
+
+            bool operator==(const Iterator& other) const { return mInfo == other.mInfo; }
+
+            bool operator!=(const Iterator& other) const { return mInfo != other.mInfo; }
+
+            reference operator*() { return mInfo; }
+
+            pointer operator->() { return mInfo; }
+
+        private:
+            struct addrinfo* mInfo;
+        };
+
+        AddrInfo(const std::string& address, struct addrinfo* hint = nullptr);
+
+        bool empty() const;
+
+        ~AddrInfo() noexcept;
+
+        Iterator begin() const;
+
+        Iterator end() const;
+
+    private:
+        struct addrinfo* mInfo;
+    };
+
     sockaddr_storage getAddressFromFd(SocketHandle socket);
 
     Endpoint getEndpoint(const sockaddr* addr);

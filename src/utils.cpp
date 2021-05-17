@@ -2,8 +2,24 @@
 #include "cpplibsocket/utils/Defer.h"
 
 namespace cpplibsocket {
-
 namespace utils {
+
+    AddrInfo::AddrInfo(const std::string& address, struct addrinfo* hint)
+        : mInfo(nullptr) {
+        const int status = getaddrinfo(address.c_str(), nullptr, hint, &mInfo);
+        if (status != 0) {
+            throw Exception(
+                FUNC_NAME, "Couldn't get info for address \"", address, "\" - ", gai_strerror(status));
+        }
+    }
+
+    bool AddrInfo::empty() const { return mInfo == nullptr; }
+
+    AddrInfo::~AddrInfo() noexcept { ::freeaddrinfo(mInfo); }
+
+    AddrInfo::Iterator AddrInfo::begin() const { return Iterator(mInfo); }
+
+    AddrInfo::Iterator AddrInfo::end() const { return Iterator(nullptr); }
 
     sockaddr_storage getAddressFromFd(SocketHandle socket) {
         sockaddr_storage addr = {};
@@ -36,9 +52,19 @@ namespace utils {
         getSinPort(addr) = htons(port);
 
         if (!ipAddress.empty()) {
-            if (inet_pton(storage.ss_family, ipAddress.c_str(), getSinAddr(addr)) != 1) {
+            struct addrinfo hint = {};
+            hint.ai_family = storage.ss_family;
+            hint.ai_flags = AI_NUMERICHOST;
+            const AddrInfo addrInfo(ipAddress, &hint);
+            if (addrInfo.empty()) {
                 throw Exception(FUNC_NAME, "Invalid IP address ", ipAddress);
             }
+            addrinfo* info = *std::begin(addrInfo);
+            ASSERT(info->ai_family == toNativeDomain(ipVersion));
+            ASSERT(info->ai_addrlen == getAddrSize(ipVersion));
+            const std::size_t offset = ipVersion == IPVer::IPV4 ? offsetof(sockaddr_in, sin_addr)
+                                                                : offsetof(sockaddr_in6, sin6_addr);
+            std::memcpy(getSinAddr(addr), getSinAddr(info->ai_addr), info->ai_addrlen - offset);
         } else {
             switch (ipVersion) {
             case IPVer::IPV4: {
@@ -58,5 +84,4 @@ namespace utils {
     std::string getLocalIpAddress(const IPVer ipVersion) { return Platform::getLocalIpAddress(ipVersion); }
 
 } // namespace utils
-
 } // namespace cpplibsocket
