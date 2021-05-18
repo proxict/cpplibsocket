@@ -5,9 +5,11 @@ set(platform ${CMAKE_SYSTEM_NAME})
 include("cmake/${platform}-compiler-config.txt")
 include(cmake/doxygen.txt)
 
-option(BUILD_TESTS "" OFF)
+set(BUILD_TESTS_STORE ${BUILD_TESTS})
+set(BUILD_TESTS OFF CACHE BOOL INTERNAL FORCE)
 add_subdirectory(external/lib-expected)
 add_subdirectory(external/lib-optional)
+set(BUILD_TESTS ${BUILD_TESTS_STORE} CACHE BOOL INTERNAL FORCE)
 
 add_library(cpplibsocket STATIC
     src/${platform}Socket.cpp
