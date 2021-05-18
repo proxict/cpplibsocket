@@ -61,8 +61,8 @@ Port SocketBase::bind(const std::string& ip, const Port port) {
             FUNC_NAME, "Couldn't bind address \"", ipStr, ":", port, "\" - ", getLastErrorFormatted());
     }
 
-    const Address storage = utils::getAddressFromFd(mSocketHandle);
-    return ntohs(utils::getSinPort(&storage.sa));
+    const Address boundAddr = utils::getAddressFromFd(mSocketHandle);
+    return utils::getSinPort(boundAddr);
 }
 
 Port SocketBase::bindAll(const Port port) {
@@ -77,6 +77,10 @@ void SocketBase::setBlocked(const bool blocked) {
         throw Exception(
             FUNC_NAME, "Couldn't set blocking/non-blocking socket property - ", getLastErrorFormatted());
     }
+}
+
+Endpoint SocketBase::getEndpoint() const {
+    return utils::getEndpoint(mSocketHandle);
 }
 
 SocketBase::SocketBase(const IPProto ipProtocol, const IPVer ipVersion)

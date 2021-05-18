@@ -77,6 +77,8 @@ public:
 
     SocketHandle getSocketHandle() const noexcept { return mSocketHandle; }
 
+    Endpoint getEndpoint() const;
+
 protected:
     /// Creates a new socket with the given protocol and IP version
     /// \throws Exception in case there were some problems while opening the socket.

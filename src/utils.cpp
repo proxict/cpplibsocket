@@ -30,18 +30,13 @@ namespace utils {
         return addr;
     }
 
-    Endpoint getEndpoint(const sockaddr* addr) {
+    Endpoint getEndpoint(const Address& addr) {
         char str[INET6_ADDRSTRLEN] = {};
-        ::inet_ntop(addr->sa_family, getSinAddr(addr), str, sizeof(str));
-        return Endpoint(toIPVer(addr->sa_family), std::string(str), ntohs(getSinPort(addr)));
+        ::inet_ntop(addr.sa_stor.ss_family, getSinAddr(addr), str, sizeof(str));
+        return Endpoint(toIPVer(addr.sa_stor.ss_family), std::string(str), getSinPort(addr));
     }
 
-    Endpoint getEndpoint(const Address& address) { return getEndpoint(&address.sa); }
-
-    Endpoint getEndpoint(SocketHandle socket) {
-        const Address addr = getAddressFromFd(socket);
-        return getEndpoint(&addr.sa);
-    }
+    Endpoint getEndpoint(SocketHandle socket) { return getEndpoint(getAddressFromFd(socket)); }
 
     Address createAddr(const Endpoint& endpoint) {
         return createAddr(endpoint.ipVersion, endpoint.ip, endpoint.port);
@@ -73,7 +68,7 @@ namespace utils {
             }
             }
         }
-        getSinPort(&addr.sa) = htons(port);
+        setPort(addr, port);
         return addr;
     }
 
@@ -91,7 +86,7 @@ namespace utils {
                 try {
                     Address addr;
                     std::memcpy(&addr.sa, info->ai_addr, info->ai_addrlen);
-                    getSinPort(&addr.sa) = htons(port);
+                    setPort(addr, port);
                     return addr;
                 } catch (...) {
                     continue;

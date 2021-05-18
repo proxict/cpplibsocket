@@ -44,7 +44,7 @@ Socket<IPProto::UDP>::receiveFrom(Byte* data, const UnsignedSize maxSize, Endpoi
     }
     ASSERT(received >= 0);
     if (source) {
-        *source = utils::getEndpoint(&addr.sa);
+        *source = utils::getEndpoint(addr);
     }
     return static_cast<UnsignedSize>(received);
 }

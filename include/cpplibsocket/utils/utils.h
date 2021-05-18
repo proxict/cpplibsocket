@@ -5,57 +5,40 @@
 #include "cpplibsocket/utils/Optional.h"
 
 namespace cpplibsocket {
-
-namespace traits {
-    template <typename TFrom, typename TTo>
-    using CastPointer = typename std::
-        conditional<std::is_const<typename std::remove_pointer<TFrom>::type>::value, const TTo*, TTo*>::type;
-
-    template <IPVer TIPVer,
-              typename...,
-              typename = typename std::enable_if<TIPVer == IPVer::IPV4 || TIPVer == IPVer::IPV6>::type,
-              typename T,
-              typename TSockAddr =
-                  typename std::conditional<TIPVer == IPVer::IPV4, sockaddr_in, sockaddr_in6>::type>
-    CastPointer<T, TSockAddr> castAddrPointer(T address) {
-        assert(address != nullptr);
-        return reinterpret_cast<CastPointer<T, TSockAddr>>(address);
-    }
-} // namespace traits
-
 namespace utils {
 
-    template <typename..., typename T>
-    traits::CastPointer<T, void> getSinAddr(T address) {
-        static_assert(std::is_same<typename std::remove_const<typename std::remove_pointer<T>::type>::type,
-                                   sockaddr>::value,
-                      "address must be of type sockaddr");
-        assert(address != nullptr);
-        switch (address->sa_family) {
+    inline const void* getSinAddr(const Address& address) {
+        switch (address.sa_stor.ss_family) {
         case AF_INET:
-            return &traits::castAddrPointer<IPVer::IPV4>(address)->sin_addr;
+            return &address.sa_in.sin_addr;
         case AF_INET6:
-            return &traits::castAddrPointer<IPVer::IPV6>(address)->sin6_addr;
+            return &address.sa_in6.sin6_addr;
         default:
-            throw Exception(FUNC_NAME, "Address family ", address->sa_family, " is not supported");
+            throw Exception(FUNC_NAME, "Address family ", address.sa_stor.ss_family, " is not supported");
         }
     }
 
-    template <typename..., typename T>
-    typename std::
-        conditional<std::is_const<typename std::remove_pointer<T>::type>::value, const Port&, Port&>::type
-        getSinPort(T address) {
-        static_assert(std::is_same<typename std::remove_const<typename std::remove_pointer<T>::type>::type,
-                                   sockaddr>::value,
-                      "address must be of type sockaddr");
-        assert(address != nullptr);
-        switch (address->sa_family) {
+    inline Port getSinPort(const Address& address) {
+        switch (address.sa_stor.ss_family) {
         case AF_INET:
-            return traits::castAddrPointer<IPVer::IPV4>(address)->sin_port;
+            return ntohs(address.sa_in.sin_port);
         case AF_INET6:
-            return traits::castAddrPointer<IPVer::IPV6>(address)->sin6_port;
+            return ntohs(address.sa_in6.sin6_port);
         default:
-            throw Exception(FUNC_NAME, "Address family ", address->sa_family, " is not supported");
+            throw Exception(FUNC_NAME, "Address family ", address.sa_stor.ss_family, " is not supported");
+        }
+    }
+
+    inline void setPort(Address& address, const Port port) {
+        switch (address.sa_stor.ss_family) {
+        case AF_INET:
+            address.sa_in.sin_port = htons(port);
+            break;
+        case AF_INET6:
+            address.sa_in6.sin6_port = htons(port);
+            break;
+        default:
+            throw Exception(FUNC_NAME, "Address family ", address.sa_stor.ss_family, " is not supported");
         }
     }
 
@@ -111,8 +94,6 @@ namespace utils {
 
     Address getAddressFromFd(SocketHandle socket);
 
-    Endpoint getEndpoint(const sockaddr* addr);
-
     Endpoint getEndpoint(const Address& address);
 
     Endpoint getEndpoint(SocketHandle socket);
@@ -132,7 +113,6 @@ namespace utils {
     Optional<std::string> resolveHostname(const std::string& hostname,
                                           const Optional<IPVer> ipVersion = UnspecIPVer) noexcept;
 } // namespace utils
-
 } // namespace cpplibsocket
 
 #endif // CPPLIBSOCKET_UTILS_UTILS_H_
