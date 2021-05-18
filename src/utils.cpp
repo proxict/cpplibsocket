@@ -39,8 +39,8 @@ namespace utils {
     Endpoint getEndpoint(const Address& address) { return getEndpoint(&address.sa); }
 
     Endpoint getEndpoint(SocketHandle socket) {
-        const Address storage = getAddressFromFd(socket);
-        return getEndpoint(&storage.sa);
+        const Address addr = getAddressFromFd(socket);
+        return getEndpoint(&addr.sa);
     }
 
     Address createAddr(const Endpoint& endpoint) {
@@ -48,13 +48,10 @@ namespace utils {
     }
 
     Address createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port) {
-        Address storage = {};
-        storage.sa_stor.ss_family = toNativeDomain(ipVersion);
-        getSinPort(&storage.sa) = htons(port);
-
+        Address addr = {};
         if (!ipAddress.empty()) {
             struct addrinfo hint = {};
-            hint.ai_family = storage.sa_stor.ss_family;
+            hint.ai_family = toNativeDomain(ipVersion);
             hint.ai_flags = AI_NUMERICHOST;
             const AddrInfo addrInfo(ipAddress, &hint);
             if (addrInfo.empty()) {
@@ -63,39 +60,39 @@ namespace utils {
             addrinfo* info = *std::begin(addrInfo);
             ASSERT(info->ai_family == toNativeDomain(ipVersion));
             ASSERT(info->ai_addrlen == getAddrSize(ipVersion));
-            const std::size_t offset = ipVersion == IPVer::IPV4 ? offsetof(sockaddr_in, sin_addr)
-                                                                : offsetof(sockaddr_in6, sin6_addr);
-            std::memcpy(getSinAddr(&storage.sa), getSinAddr(info->ai_addr), info->ai_addrlen - offset);
+            std::memcpy(&addr.sa, info->ai_addr, info->ai_addrlen);
         } else {
             switch (ipVersion) {
             case IPVer::IPV4: {
-                storage.sa_in.sin_addr.s_addr = INADDR_ANY;
+                addr.sa_in.sin_addr.s_addr = INADDR_ANY;
                 break;
             }
             case IPVer::IPV6: {
-                storage.sa_in6.sin6_addr = IN6ADDR_ANY_INIT;
+                addr.sa_in6.sin6_addr = IN6ADDR_ANY_INIT;
                 break;
             }
             }
         }
-
-        return storage;
+        getSinPort(&addr.sa) = htons(port);
+        return addr;
     }
 
     std::string getLocalIpAddress(const IPVer ipVersion) { return Platform::getLocalIpAddress(ipVersion); }
 
-    Optional<std::string> resolveHostname(const std::string& hostname,
-                                          const Optional<IPVer> ipVersion) noexcept {
+    Optional<Address>
+    resolveHostname(const std::string& hostname, const Port port, const Optional<IPVer> ipVersion) noexcept {
         struct addrinfo hint = {};
         hint.ai_family = AF_UNSPEC;
         if (ipVersion) {
             hint.ai_family = *ipVersion == IPVer::IPV4 ? AF_INET : AF_INET6;
         }
         try {
-            AddrInfo addrInfo(hostname, &hint);
-            for (struct addrinfo* info : addrInfo) {
+            for (struct addrinfo* info : AddrInfo(hostname, &hint)) {
                 try {
-                    return getEndpoint(info->ai_addr).ip;
+                    Address addr;
+                    std::memcpy(&addr.sa, info->ai_addr, info->ai_addrlen);
+                    getSinPort(&addr.sa) = htons(port);
+                    return addr;
                 } catch (...) {
                     continue;
                 }
@@ -103,6 +100,15 @@ namespace utils {
         } catch (...) {
         }
         return NullOptional;
+    }
+
+    Optional<std::string> resolveHostname(const std::string& hostname,
+                                          const Optional<IPVer> ipVersion) noexcept {
+        const Optional<Address> addr = resolveHostname(hostname, 0, ipVersion);
+        if (!addr) {
+            return NullOptional;
+        }
+        return getEndpoint(*addr).ip;
     }
 
 } // namespace utils

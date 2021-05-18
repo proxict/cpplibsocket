@@ -125,6 +125,10 @@ namespace utils {
 
     static constexpr NullOptionalT UnspecIPVer = NullOptional;
 
+    Optional<Address> resolveHostname(const std::string& hostname,
+                                      const Port port,
+                                      const Optional<IPVer> ipVersion = UnspecIPVer) noexcept;
+
     Optional<std::string> resolveHostname(const std::string& hostname,
                                           const Optional<IPVer> ipVersion = UnspecIPVer) noexcept;
 } // namespace utils
