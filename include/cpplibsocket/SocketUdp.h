@@ -17,6 +17,15 @@ public:
     /// Sends data to the given IP address and port
     /// \param data The data to send.
     /// \param size The data size.
+    /// \param address The address the data will be sent to.
+    /// \returns If no error occurred, the size of the data sent is returned. An error is returned otherwise.
+    /// \throws Exception in case the socket is not open or if there was some error while sending the data.
+    Expected<UnsignedSize, WouldBlock>
+    sendTo(const Byte* data, const UnsignedSize size, const Address& address);
+
+    /// Sends data to the given IP address and port
+    /// \param data The data to send.
+    /// \param size The data size.
     /// \param hostIp The IP the data will be sent to.
     /// \param hostPort The port the receiving socket is listening on.
     /// \returns If no error occurred, the size of the data sent is returned. An error is returned otherwise.

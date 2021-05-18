@@ -36,6 +36,8 @@ namespace utils {
         return Endpoint(toIPVer(addr->sa_family), std::string(str), ntohs(getSinPort(addr)));
     }
 
+    Endpoint getEndpoint(const Address& address) { return getEndpoint(&address.sa); }
+
     Endpoint getEndpoint(SocketHandle socket) {
         const Address storage = getAddressFromFd(socket);
         return getEndpoint(&storage.sa);

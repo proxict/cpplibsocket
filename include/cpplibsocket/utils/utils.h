@@ -113,6 +113,8 @@ namespace utils {
 
     Endpoint getEndpoint(const sockaddr* addr);
 
+    Endpoint getEndpoint(const Address& address);
+
     Endpoint getEndpoint(SocketHandle socket);
 
     Address createAddr(const Endpoint& endpoint);

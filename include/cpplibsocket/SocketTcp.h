@@ -15,6 +15,12 @@ public:
     Socket(const IPVer ipVersion);
 
     /// Initiates a connection to a server
+    /// \param address The address to connect to.
+    /// \throws Exception in case the socket is not open or if there was some error while connecting to the
+    /// peer.
+    void connect(const Address& address);
+
+    /// Initiates a connection to a server
     /// \param hostIp The IP address to connect to.
     /// \param hostPort The port the server is listening on.
     /// \throws Exception in case the socket is not open or if there was some error while connecting to the

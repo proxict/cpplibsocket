@@ -1,19 +1,27 @@
 #include "cpplibsocket/SocketTcp.h"
+#include "cpplibsocket/utils/EndpointPrint.h"
+#include "cpplibsocket/utils/utils.h"
+
+#include <sstream>
 
 namespace cpplibsocket {
 
 Socket<IPProto::TCP>::Socket(const IPVer ipVersion)
     : SocketBase(IPProto::TCP, ipVersion) {}
 
-void Socket<IPProto::TCP>::connect(const std::string& hostIp, const Port hostPort) {
+void Socket<IPProto::TCP>::connect(const Address& address) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "The socket is not open");
     }
-    const Address addr = createAddr(hostIp, hostPort);
-    if (::connect(mSocketHandle, &addr.sa, getAddrSize(mIpVersion)) == -1) {
-        throw Exception(
-            FUNC_NAME, "Couldn't connect to \"", hostIp, ":", hostPort, "\" - ", getLastErrorFormatted());
+    if (::connect(mSocketHandle, &address.sa, getAddrSize(mIpVersion)) == -1) {
+        std::ostringstream ss;
+        ss << "Couldn't connect to " << utils::getEndpoint(address) << " - " << getLastErrorFormatted();
+        throw Exception(FUNC_NAME, ss.str());
     }
+}
+
+void Socket<IPProto::TCP>::connect(const std::string& hostIp, const Port hostPort) {
+    connect(createAddr(hostIp, hostPort));
 }
 
 void Socket<IPProto::TCP>::listen(const int backlogSize) {

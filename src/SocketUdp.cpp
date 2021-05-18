@@ -6,15 +6,12 @@ namespace cpplibsocket {
 Socket<IPProto::UDP>::Socket(const IPVer ipVersion)
     : SocketBase(IPProto::UDP, ipVersion) {}
 
-Expected<UnsignedSize, WouldBlock> Socket<IPProto::UDP>::sendTo(const Byte* data,
-                                                                const UnsignedSize size,
-                                                                const std::string& hostIp,
-                                                                const Port hostPort) {
+Expected<UnsignedSize, WouldBlock>
+Socket<IPProto::UDP>::sendTo(const Byte* data, const UnsignedSize size, const Address& address) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Couldn't send data");
     }
-    const Address addr = createAddr(hostIp, hostPort);
-    const SignedSize sent = Platform::sendTo(mSocketHandle, data, size, &addr.sa);
+    const SignedSize sent = Platform::sendTo(mSocketHandle, data, size, &address.sa);
     if (sent == -1) {
         if (errno == EWOULDBLOCK) {
             return makeUnexpected(WouldBlock{});
@@ -23,6 +20,13 @@ Expected<UnsignedSize, WouldBlock> Socket<IPProto::UDP>::sendTo(const Byte* data
     }
     ASSERT(sent >= 0);
     return static_cast<UnsignedSize>(sent);
+}
+
+Expected<UnsignedSize, WouldBlock> Socket<IPProto::UDP>::sendTo(const Byte* data,
+                                                                const UnsignedSize size,
+                                                                const std::string& hostIp,
+                                                                const Port hostPort) {
+    return sendTo(data, size, createAddr(hostIp, hostPort));
 }
 
 Expected<UnsignedSize, WouldBlock>
