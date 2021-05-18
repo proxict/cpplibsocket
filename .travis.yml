@@ -45,5 +45,5 @@ compiler:
 
 script:
   - mkdir build && cd build
-  - cmake -DBUILD_TESTS=1 ..
+  - cmake -DBUILD_TESTS=ON ..
   - make -j$(nproc) && bin/unittests

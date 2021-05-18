@@ -34,3 +34,7 @@ if (${platform} STREQUAL "Windows")
 	)
 endif()
 
+if (BUILD_TESTS)
+    add_subdirectory(test)
+endif()
+
