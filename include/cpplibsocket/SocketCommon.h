@@ -25,9 +25,11 @@ namespace cpplibsocket {
 #ifdef _WIN32
 using SockLenType = int;
 using SocketHandle = SOCKET;
+using AddressFamily = ADDRESS_FAMILY;
 #else
 using SockLenType = socklen_t;
 using SocketHandle = int;
+using AddressFamily = int;
 #endif
 
 using UnsignedSize = std::size_t;
@@ -76,7 +78,7 @@ inline SockLenType getAddrSize(const IPVer ipVersion) {
     }
 }
 
-inline int toNativeDomain(const IPVer ipVersion) {
+inline AddressFamily toNativeDomain(const IPVer ipVersion) {
     switch (ipVersion) {
     case IPVer::IPV4:
         return AF_INET;
