@@ -156,8 +156,6 @@ namespace Platform {
 
     bool closeSocket(SocketHandle socket);
 
-    std::string getLocalIpAddress(const IPVer ipVersion);
-
 #ifdef _WIN32
     static constexpr SocketHandle SOCKET_NULL = INVALID_SOCKET;
 #else

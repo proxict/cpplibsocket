@@ -102,8 +102,6 @@ namespace utils {
 
     Address createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port);
 
-    std::string getLocalIpAddress(const IPVer ipVersion = IPVer::IPV4);
-
     static constexpr NullOptionalT UnspecIPVer = NullOptional;
 
     Optional<Address> resolveHostname(const std::string& hostname,

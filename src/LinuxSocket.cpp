@@ -58,42 +58,6 @@ namespace Platform {
 
     bool closeSocket(SocketHandle socket) { return ::close(socket) == 0; }
 
-    std::string getLocalIpAddress(const IPVer ipVersion) {
-        ifaddrs* addr = nullptr;
-        auto cleanup = utils::makeDeferred([&addr]() noexcept {
-            if (addr != nullptr) {
-                freeifaddrs(addr);
-            }
-        });
-        if (getifaddrs(&addr) == -1) {
-            throw Exception(FUNC_NAME, "Couldn't get local IP address - ", getLastErrorFormatted());
-        }
-
-        for (ifaddrs* walk = addr; walk != nullptr; walk = walk->ifa_next) {
-            if (!walk->ifa_addr) {
-                continue;
-            }
-            const int family = walk->ifa_addr->sa_family;
-            if (family != toNativeDomain(ipVersion) || !(walk->ifa_flags & IFF_UP) ||
-                (walk->ifa_flags & IFF_LOOPBACK)) {
-                continue;
-            }
-
-            char addrRaw[NI_MAXHOST] = {};
-            const SockLenType sockSize =
-                static_cast<SockLenType>(family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6));
-
-            const int status =
-                getnameinfo(walk->ifa_addr, sockSize, addrRaw, sizeof(addrRaw), nullptr, 0, NI_NUMERICHOST);
-            if (status != 0) {
-                throw Exception(FUNC_NAME, "Couldn't get local IP address - ", gai_strerror(status));
-            }
-            return std::string(addrRaw);
-        }
-
-        throw Exception(FUNC_NAME, "Couldn't get local IP address");
-    }
-
 } // namespace Platform
 
 } // namespace cpplibsocket

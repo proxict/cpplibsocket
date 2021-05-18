@@ -99,40 +99,6 @@ namespace Platform {
 
     bool closeSocket(SocketHandle socket) { return ::closesocket(socket) != SOCKET_ERROR; }
 
-    std::string getLocalIpAddress(const IPVer ipVersion) {
-        std::vector<IP_ADAPTER_ADDRESSES> adapterAddresses;
-        ULONG adapterCnt = 0;
-        auto getAdapters = [&adapterAddresses, &adapterCnt, ipVersion] {
-            return GetAdaptersAddresses((ULONG)toNativeDomain(ipVersion),
-                                        GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
-                                        nullptr,
-                                        adapterAddresses.data(),
-                                        &adapterCnt);
-        };
-
-        // Get just the number of adapters
-        ULONG retval = getAdapters();
-        if (retval != ERROR_BUFFER_OVERFLOW || adapterCnt == 0) {
-            throw Exception(FUNC_NAME, "Couldn't get local IP address - ", getLastErrorFormatted());
-        }
-        adapterAddresses.resize(adapterCnt);
-
-        // Now get the actual adresses
-        retval = getAdapters();
-        if (retval != ERROR_SUCCESS) {
-            throw Exception(FUNC_NAME, "Couldn't get local IP address - ", getLastErrorFormatted());
-        }
-
-        for (IP_ADAPTER_ADDRESSES* item = adapterAddresses.data(); item; item = item->Next) {
-            if (item->OperStatus != IfOperStatusUp) {
-                continue;
-            }
-            return utils::getEndpoint(item->FirstUnicastAddress->Address.lpSockaddr).ip;
-        }
-
-        throw Exception(FUNC_NAME, "Couldn't get local IP address");
-    }
-
 } // namespace Platform
 
 } // namespace cpplibsocket

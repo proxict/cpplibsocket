@@ -72,8 +72,6 @@ namespace utils {
         return addr;
     }
 
-    std::string getLocalIpAddress(const IPVer ipVersion) { return Platform::getLocalIpAddress(ipVersion); }
-
     Optional<Address>
     resolveHostname(const std::string& hostname, const Port port, const Optional<IPVer> ipVersion) noexcept {
         struct addrinfo hint = {};
