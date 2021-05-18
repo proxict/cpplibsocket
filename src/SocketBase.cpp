@@ -53,16 +53,16 @@ Port SocketBase::bind(const std::string& ip, const Port port) {
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "Socket is not open");
     }
-    const sockaddr_storage addr = createAddr(ip, port);
-    if (::bind(mSocketHandle, reinterpret_cast<const sockaddr*>(&addr), sizeof(sockaddr_storage)) != 0) {
+    const Address addr = createAddr(ip, port);
+    if (::bind(mSocketHandle, &addr.sa, sizeof(Address)) != 0) {
         const std::string ipStr = mIpVersion == IPVer::IPV4 ? (ip.empty() ? "0.0.0.0" : ip)
                                                             : (ip.empty() ? "[::/0]" : ("[" + ip + "]"));
         throw Exception(
             FUNC_NAME, "Couldn't bind address \"", ipStr, ":", port, "\" - ", getLastErrorFormatted());
     }
 
-    const sockaddr_storage storage = utils::getAddressFromFd(mSocketHandle);
-    return ntohs(utils::getSinPort(reinterpret_cast<const sockaddr*>(&storage)));
+    const Address storage = utils::getAddressFromFd(mSocketHandle);
+    return ntohs(utils::getSinPort(&storage.sa));
 }
 
 Port SocketBase::bindAll(const Port port) {
@@ -92,7 +92,7 @@ SocketBase::SocketBase(const IPProto ipProtocol,
     , mIpProtocol(ipProtocol)
     , mIpVersion(ipVersion) {}
 
-sockaddr_storage SocketBase::createAddr(const std::string& hostIp, const Port port) const {
+Address SocketBase::createAddr(const std::string& hostIp, const Port port) const {
     return utils::createAddr(mIpVersion, hostIp, port);
 }
 

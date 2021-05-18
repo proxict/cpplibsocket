@@ -21,10 +21,10 @@ namespace utils {
 
     AddrInfo::Iterator AddrInfo::end() const { return Iterator(nullptr); }
 
-    sockaddr_storage getAddressFromFd(SocketHandle socket) {
-        sockaddr_storage addr = {};
+    Address getAddressFromFd(SocketHandle socket) {
+        Address addr = {};
         SockLenType len = sizeof(addr);
-        if (::getsockname(socket, reinterpret_cast<sockaddr*>(&addr), &len) != 0) {
+        if (::getsockname(socket, &addr.sa, &len) != 0) {
             throw Exception(FUNC_NAME, "Couldn't get address from socket - ", getLastErrorFormatted());
         }
         return addr;
@@ -37,23 +37,22 @@ namespace utils {
     }
 
     Endpoint getEndpoint(SocketHandle socket) {
-        const sockaddr_storage storage = getAddressFromFd(socket);
-        return getEndpoint(reinterpret_cast<const sockaddr*>(&storage));
+        const Address storage = getAddressFromFd(socket);
+        return getEndpoint(&storage.sa);
     }
 
-    sockaddr_storage createAddr(const Endpoint& endpoint) {
+    Address createAddr(const Endpoint& endpoint) {
         return createAddr(endpoint.ipVersion, endpoint.ip, endpoint.port);
     }
 
-    sockaddr_storage createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port) {
-        struct sockaddr_storage storage = {};
-        sockaddr* addr = reinterpret_cast<sockaddr*>(&storage);
-        storage.ss_family = toNativeDomain(ipVersion);
-        getSinPort(addr) = htons(port);
+    Address createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port) {
+        Address storage = {};
+        storage.sa_stor.ss_family = toNativeDomain(ipVersion);
+        getSinPort(&storage.sa) = htons(port);
 
         if (!ipAddress.empty()) {
             struct addrinfo hint = {};
-            hint.ai_family = storage.ss_family;
+            hint.ai_family = storage.sa_stor.ss_family;
             hint.ai_flags = AI_NUMERICHOST;
             const AddrInfo addrInfo(ipAddress, &hint);
             if (addrInfo.empty()) {
@@ -64,15 +63,15 @@ namespace utils {
             ASSERT(info->ai_addrlen == getAddrSize(ipVersion));
             const std::size_t offset = ipVersion == IPVer::IPV4 ? offsetof(sockaddr_in, sin_addr)
                                                                 : offsetof(sockaddr_in6, sin6_addr);
-            std::memcpy(getSinAddr(addr), getSinAddr(info->ai_addr), info->ai_addrlen - offset);
+            std::memcpy(getSinAddr(&storage.sa), getSinAddr(info->ai_addr), info->ai_addrlen - offset);
         } else {
             switch (ipVersion) {
             case IPVer::IPV4: {
-                traits::castAddrPointer<IPVer::IPV4>(addr)->sin_addr.s_addr = INADDR_ANY;
+                storage.sa_in.sin_addr.s_addr = INADDR_ANY;
                 break;
             }
             case IPVer::IPV6: {
-                traits::castAddrPointer<IPVer::IPV6>(addr)->sin6_addr = IN6ADDR_ANY_INIT;
+                storage.sa_in6.sin6_addr = IN6ADDR_ANY_INIT;
                 break;
             }
             }

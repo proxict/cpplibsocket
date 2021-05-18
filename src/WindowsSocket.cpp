@@ -83,7 +83,7 @@ namespace Platform {
     SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize maxSize, sockaddr* addr) {
         const int viableSize =
             static_cast<int>(std::min(static_cast<UnsignedSize>(std::numeric_limits<int>::max()), maxSize));
-        SockLenType sockSize = sizeof(sockaddr_storage);
+        SockLenType sockSize = sizeof(Address);
         return static_cast<SignedSize>(
             ::recvfrom(socket, reinterpret_cast<char*>(data), viableSize, 0, addr, &sockSize));
     }

@@ -109,15 +109,15 @@ namespace utils {
         struct addrinfo* mInfo;
     };
 
-    sockaddr_storage getAddressFromFd(SocketHandle socket);
+    Address getAddressFromFd(SocketHandle socket);
 
     Endpoint getEndpoint(const sockaddr* addr);
 
     Endpoint getEndpoint(SocketHandle socket);
 
-    sockaddr_storage createAddr(const Endpoint& endpoint);
+    Address createAddr(const Endpoint& endpoint);
 
-    sockaddr_storage createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port);
+    Address createAddr(const IPVer ipVersion, const std::string& ipAddress, const Port port);
 
     std::string getLocalIpAddress(const IPVer ipVersion = IPVer::IPV4);
 

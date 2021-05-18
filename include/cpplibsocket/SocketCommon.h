@@ -56,6 +56,13 @@ struct Endpoint {
     Port port;
 };
 
+union Address {
+    struct sockaddr sa;
+    struct sockaddr_in sa_in;
+    struct sockaddr_in6 sa_in6;
+    struct sockaddr_storage sa_stor;
+};
+
 inline IPVer toIPVer(const int nativeIpVersion) {
     switch (nativeIpVersion) {
     case AF_INET:

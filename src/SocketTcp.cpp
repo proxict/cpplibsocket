@@ -9,8 +9,8 @@ void Socket<IPProto::TCP>::connect(const std::string& hostIp, const Port hostPor
     if (!isOpen()) {
         throw Exception(FUNC_NAME, "The socket is not open");
     }
-    const sockaddr_storage addr = createAddr(hostIp, hostPort);
-    if (::connect(mSocketHandle, reinterpret_cast<const sockaddr*>(&addr), getAddrSize(mIpVersion)) == -1) {
+    const Address addr = createAddr(hostIp, hostPort);
+    if (::connect(mSocketHandle, &addr.sa, getAddrSize(mIpVersion)) == -1) {
         throw Exception(
             FUNC_NAME, "Couldn't connect to \"", hostIp, ":", hostPort, "\" - ", getLastErrorFormatted());
     }

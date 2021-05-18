@@ -35,7 +35,7 @@ namespace Platform {
 
     SignedSize receiveFrom(SocketHandle socket, Byte* data, const UnsignedSize maxSize, sockaddr* addr) {
         const std::size_t viableSize = std::min(std::numeric_limits<size_t>::max(), maxSize);
-        SockLenType sockSize = sizeof(sockaddr_storage);
+        SockLenType sockSize = sizeof(Address);
         return ::recvfrom(socket, data, viableSize, 0, addr, &sockSize);
     }
 
