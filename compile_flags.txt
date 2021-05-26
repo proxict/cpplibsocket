@@ -3,5 +3,7 @@
 -Iinclude
 -Iexternal/lib-expected/include
 -Iexternal/lib-optional/include
+-Ibuild/_deps/googletest-src/googletest/include
+-Ibuild/_deps/googletest-src/googlemock/include
 -Wall
 -Wextra
