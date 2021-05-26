@@ -13,20 +13,20 @@ cpplibsocket is a very lightweight system socket RAII wrapper.
 Dependencies
 ------------
  
-To build cpplibsockets, you will need [CMake](https://cmake.org/) (>= 3.0).
+To build cpplibsockets, you will need [CMake](https://cmake.org/) (>= 3.14).
 
 Building cpplibsockets
 ----------------------
  
  - Linux:
-   - `git clone git@github.com:proxict/cpplibsocket.git`
+   - `git clone --recursive git@github.com:proxict/cpplibsocket.git`
    - `cd cpplibsockets`
    - `mkdir build && cd build`
    - `cmake --DCMAKE_BUILD_TYPE=Release ..`
    - `make -j$(nproc)`
   
  - Windows (Visual Studio 2017 64bit build):
-   - `git clone git@github.com:proxict/cpplibsocket.git`
+   - `git clone --recursive git@github.com:proxict/cpplibsocket.git`
    - `cd cpplibsockets`
    - `mkdir build && cd build`
    - `cmake.exe -G "Visual Studio 15 2017 Win64" ..`

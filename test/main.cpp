@@ -5,7 +5,7 @@
 using namespace cpplibsocket;
 
 TEST(SocketTest, basic) {
-    Socket<IPProto::TCP>(IPVer::IPV4);
+    Socket<IPProto::TCP>{IPVer::IPV4};
 }
 
 int main(int argc, char** argv) {

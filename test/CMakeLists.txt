@@ -7,12 +7,14 @@ set_property(TARGET unittests PROPERTY CXX_STANDARD 14)
 set_property(TARGET unittests PROPERTY CXX_STANDARD_REQUIRED TRUE)
 set_property(TARGET unittests PROPERTY CXX_EXTENSIONS OFF)
 
-target_compile_options(unittests
-    PRIVATE -Wall -Wextra -Wpedantic --coverage
-)
-target_link_options(unittests
-    PRIVATE --coverage
-)
+if (NOT MSVC)
+    target_compile_options(unittests
+        PRIVATE -Wall -Wextra -Wpedantic --coverage
+    )
+    target_link_options(unittests
+        PRIVATE --coverage
+    )
+endif()
 
 # GoogleTest
 include(FetchContent)
@@ -28,10 +30,18 @@ target_link_libraries(unittests
     PRIVATE gtest
 )
 
-add_custom_target(coverage
-    COMMAND ${CMAKE_SOURCE_DIR}/test/coverage.sh ${CMAKE_SOURCE_DIR}/test
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
+if (NOT MSVC)
+    add_custom_target(coverage
+        COMMAND ${CMAKE_SOURCE_DIR}/test/coverage.sh ${CMAKE_SOURCE_DIR}/test
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
 
-add_dependencies(coverage unittests)
-add_test(NAME unit-tests COMMAND unittests)
+    add_dependencies(coverage unittests)
+endif()
+
+add_custom_command(
+     TARGET unittests
+     COMMENT "Running unit-tests"
+     POST_BUILD
+     COMMAND unittests
+)

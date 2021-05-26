@@ -54,7 +54,7 @@ namespace utils {
             }
             addrinfo* info = *std::begin(addrInfo);
             ASSERT(info->ai_family == toNativeDomain(ipVersion));
-            ASSERT(info->ai_addrlen == getAddrSize(ipVersion));
+            ASSERT(static_cast<SockLenType>(info->ai_addrlen) == getAddrSize(ipVersion));
             std::memcpy(&addr.sa, info->ai_addr, info->ai_addrlen);
         } else {
             switch (ipVersion) {
